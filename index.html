@@ -123,11 +123,34 @@
             background: rgba(234,67,53,0.1);
             display: none;
         }
+        .camera-status {
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 10px auto;
+            max-width: 200px;
+            font-weight: bold;
+            display: none;
+        }
+        .camera-active {
+            background-color: #34A853;
+            color: white;
+        }
+        .camera-inactive {
+            background-color: #EA4335;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        
+        <div id="camera-active-status" class="camera-status camera-active">
+            الكاميرا تعمل الآن
+        </div>
+        <div id="camera-inactive-status" class="camera-status camera-inactive">
+            الكاميرا متوقفة
+        </div>
         
         <div id="scanner-container">
             <video id="video" playsinline></video>
@@ -216,7 +239,6 @@
     </div>
 
     <script>
-        // تم تحديث رابط API إلى الرابط الجديد
         const API_URL = "https://script.google.com/macros/s/AKfycbxO2-22FIqMfhfmC490IyizC0d0luA55LF8oxfgclwqaeeMdt4DkKqlY-dmc3EBtc2N/exec";
         
         const video = document.getElementById('video');
@@ -229,6 +251,8 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+        const cameraActiveStatus = document.getElementById('camera-active-status');
+        const cameraInactiveStatus = document.getElementById('camera-inactive-status');
         
         let stream = null;
         let scanning = false;
@@ -250,6 +274,10 @@
                 stopBtn.disabled = false;
                 scanning = true;
                 
+                // إظهار حالة الكاميرا النشطة
+                cameraActiveStatus.style.display = 'block';
+                cameraInactiveStatus.style.display = 'none';
+                
                 scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
@@ -267,6 +295,10 @@
             startBtn.disabled = false;
             stopBtn.disabled = true;
             scanning = false;
+            
+            // إظهار حالة الكاميرا المتوقفة
+            cameraActiveStatus.style.display = 'none';
+            cameraInactiveStatus.style.display = 'block';
         });
         
         // البحث يدوياً
@@ -367,6 +399,11 @@
             if (e.key === 'Enter') {
                 searchBtn.click();
             }
+        });
+        
+        // عند تحميل الصفحة، إظهار أن الكاميرا متوقفة
+        window.addEventListener('DOMContentLoaded', () => {
+            cameraInactiveStatus.style.display = 'block';
         });
     </script>
 </body>
