@@ -260,6 +260,10 @@
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
+                // إخفاء النتائج السابقة عند بدء مسح جديد
+                resultDiv.style.display = 'none';
+                errorMsg.style.display = 'none';
+                
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { 
                         facingMode: "environment",
