@@ -2,46 +2,36 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام مسح الباركود - جوجل شيت</title>
-    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام مسح QR Code</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
     <style>
-        :root {
-            --primary: #4285F4;
-            --secondary: #34A853;
-            --danger: #EA4335;
-            --light: #F5F5F5;
-            --dark: #202124;
-        }
         body {
             font-family: 'Tajawal', Arial, sans-serif;
             margin: 0;
-            padding: 15px;
-            background: var(--light);
-            color: var(--dark);
+            padding: 20px;
+            background: #f5f5f5;
             text-align: center;
         }
         .container {
-            max-width: 100%;
+            max-width: 800px;
             margin: 0 auto;
         }
-        h1 {
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
         #scanner-container {
-            position: relative;
             width: 100%;
             max-width: 500px;
-            margin: 0 auto 20px;
-            border-radius: 10px;
+            margin: 20px auto;
+            position: relative;
+            border: 2px solid #333;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        #camera {
+        #video {
             width: 100%;
-            height: auto;
             display: block;
+        }
+        #canvas {
+            display: none;
         }
         .scanner-overlay {
             position: absolute;
@@ -51,6 +41,7 @@
             height: 100%;
             box-sizing: border-box;
             border: 30px solid rgba(0,0,0,0.4);
+            pointer-events: none;
         }
         .scanner-line {
             position: absolute;
@@ -58,66 +49,50 @@
             left: 0;
             width: 100%;
             height: 3px;
-            background: var(--danger);
+            background: #EA4335;
             box-shadow: 0 0 10px rgba(234,67,53,0.7);
             animation: scan 2s infinite linear;
+            pointer-events: none;
         }
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
         }
         .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
+            margin: 20px 0;
         }
         button {
-            background: var(--primary);
+            background: #4285F4;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
-            min-width: 120px;
+            font-size: 16px;
         }
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        #stop-btn {
-            background: var(--danger);
-        }
-        #search-btn {
-            background: var(--secondary);
-        }
         #manual-input {
-            display: flex;
-            gap: 10px;
-            margin: 20px auto;
-            max-width: 500px;
-            padding: 0 15px;
+            margin: 20px 0;
         }
         #barcode-input {
-            flex: 1;
-            padding: 12px;
+            padding: 10px;
+            width: 200px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 5px;
             font-size: 16px;
-            text-align: center;
         }
         #result {
             background: white;
             padding: 20px;
-            border-radius: 10px;
             margin: 20px auto;
-            max-width: 500px;
-            text-align: right;
+            max-width: 600px;
+            border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: right;
             display: none;
         }
         .product-field {
@@ -125,53 +100,38 @@
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
-        .product-field:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
         .field-label {
             font-weight: bold;
-            color: var(--primary);
+            color: #4285F4;
             display: block;
             margin-bottom: 5px;
         }
         .field-value {
-            font-size: 18px;
+            font-size: 16px;
         }
-        .loading {
+        #loading {
             display: none;
             margin: 20px;
             font-size: 18px;
-            color: var(--primary);
+            color: #4285F4;
         }
-        .error {
-            color: var(--danger);
+        #error-message {
+            color: #EA4335;
             margin: 15px;
             padding: 10px;
             border-radius: 5px;
             background: rgba(234,67,53,0.1);
             display: none;
         }
-        @media (max-width: 480px) {
-            button {
-                padding: 10px 15px;
-                font-size: 14px;
-                min-width: 100px;
-            }
-            #barcode-input {
-                padding: 10px;
-                font-size: 14px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>نظام مسح الباركود</h1>
+        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
         
         <div id="scanner-container">
-            <video id="camera"></video>
+            <video id="video" playsinline></video>
+            <canvas id="canvas"></canvas>
             <div class="scanner-overlay">
                 <div class="scanner-line"></div>
             </div>
@@ -183,207 +143,231 @@
         </div>
         
         <div id="manual-input">
-            <input type="text" id="barcode-input" placeholder="أدخل رقم الباركود" inputmode="numeric">
+            <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
             <button id="search-btn">بحث</button>
         </div>
         
-        <div class="loading" id="loading">
-            جاري جلب بيانات المنتج...
-        </div>
-        
-        <div class="error" id="error-message"></div>
+        <div id="loading">جاري جلب البيانات...</div>
+        <div id="error-message"></div>
         
         <div id="result">
-            <h2 style="text-align: center; color: var(--primary); margin-top: 0;">تفاصيل العنصر</h2>
+            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
             <div class="product-field">
-                <span class="field-label">رقم المنتج:</span>
-                <span class="field-value" id="product-num">-</span>
+                <span class="field-label">الموقع الوظيفي:</span>
+                <span class="field-value" id="functional-loc">-</span>
             </div>
             <div class="product-field">
-                <span class="field-label">اسم المنتج:</span>
-                <span class="field-value" id="product-name">-</span>
+                <span class="field-label">منطقة التغطية:</span>
+                <span class="field-value" id="covering-area">-</span>
             </div>
             <div class="product-field">
-                <span class="field-label">تاريخ المنتج:</span>
-                <span class="field-value" id="product-date">-</span>
+                <span class="field-label">الوصف:</span>
+                <span class="field-value" id="description">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">وصف الفئة:</span>
+                <span class="field-value" id="category-desc">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر تفتيش:</span>
+                <span class="field-value" id="inspection-date">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر اختبار:</span>
+                <span class="field-value" id="testing-date">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة التشغيل:</span>
+                <span class="field-value" id="operating-area">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">خط الأعمال:</span>
+                <span class="field-value" id="business-line">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">المدينة:</span>
+                <span class="field-value" id="city">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">S/s:</span>
+                <span class="field-value" id="ss">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">الرقم التسلسلي:</span>
+                <span class="field-value" id="serial-number">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">نوع الكائن:</span>
+                <span class="field-value" id="object-type">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">الموقع:</span>
+                <span class="field-value" id="location">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">القسم المالك:</span>
+                <span class="field-value" id="owning-dept">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة الأعمال+التشغيل:</span>
+                <span class="field-value" id="business-operating-area">-</span>
             </div>
         </div>
     </div>
 
     <script>
-        // عناصر DOM
+        // تم تحديث رابط API إلى الرابط الجديد
+        const API_URL = "https://script.google.com/macros/s/AKfycbxO2-22FIqMfhfmC490IyizC0d0luA55LF8oxfgclwqaeeMdt4DkKqlY-dmc3EBtc2N/exec";
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
         const startBtn = document.getElementById('start-btn');
         const stopBtn = document.getElementById('stop-btn');
         const searchBtn = document.getElementById('search-btn');
         const barcodeInput = document.getElementById('barcode-input');
-        const camera = document.getElementById('camera');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
         
-        // رابط API الخاص بجوجل شيت
-        const API_URL = "https://script.google.com/macros/s/AKfycbyOk73QSLWwDMl_eDYeWQXvu4p2dJy_Hzin9KbAh1vVpkY7wJWu4RI6lytQguwfPRnA/exec";
-        
-        // متغيرات النظام
-        let scannerActive = false;
         let stream = null;
+        let scanning = false;
         
-        // إعداد مستمعي الأحداث
-        startBtn.addEventListener('click', startScanner);
-        stopBtn.addEventListener('click', stopScanner);
-        searchBtn.addEventListener('click', searchBarcode);
-        barcodeInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchBarcode();
+        // بدء المسح
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                video.srcObject = stream;
+                video.play();
+                
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                scanning = true;
+                
+                scanQRCode();
+            } catch (err) {
+                showError("تعذر الوصول إلى الكاميرا: " + err.message);
+                console.error("Camera Error:", err);
             }
         });
         
-        // دالة بدء الماسح الضوئي
-        function startScanner() {
-            // إخفاء الرسائل والنتائج السابقة
-            hideError();
-            resultDiv.style.display = 'none';
-            
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: camera,
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment",
-                        focusMode: "continuous"
-                    },
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "upc_reader"
-                    ],
-                    multiple: false
-                },
-                locate: true,
-                numOfWorkers: 4
-            }, function(err) {
-                if (err) {
-                    showError("تعذر تشغيل الكاميرا: " + err.message);
-                    return;
-                }
-                
-                Quagga.start();
-                scannerActive = true;
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-                
-                // الحصول على تدفق الفيديو للتحكم فيه لاحقًا
-                stream = camera.srcObject;
-            });
-            
-            Quagga.onDetected(async function(result) {
-                const code = result.codeResult.code;
-                console.log("تم مسح الباركود:", code);
-                
-                // إيقاف الماسح مؤقتًا أثناء جلب البيانات
-                Quagga.stop();
-                
-                await fetchProductData(code);
-                
-                // إعادة تشغيل الماسح إذا كان لا يزال نشطًا
-                if (scannerActive) {
-                    Quagga.start();
-                }
-            });
-        }
-        
-        // دالة إيقاف الماسح الضوئي
-        function stopScanner() {
-            if (Quagga) {
-                Quagga.stop();
-            }
-            
-            // إيقاف تدفق الكاميرا
+        // إيقاف المسح
+        stopBtn.addEventListener('click', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
-            
-            scannerActive = false;
+            video.srcObject = null;
             startBtn.disabled = false;
             stopBtn.disabled = true;
-        }
+            scanning = false;
+        });
         
-        // دالة البحث عن الباركود يدويًا
-        function searchBarcode() {
+        // البحث يدوياً
+        searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
+            if (barcode) {
+                fetchData(barcode);
+            } else {
+                showError("الرجاء إدخال باركود صحيح");
+            }
+        });
+        
+        // مسح QR Code
+        function scanQRCode() {
+            if (!scanning) return;
             
-            if (!barcode) {
-                showError("الرجاء إدخال رقم الباركود");
-                return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+                
+                if (code) {
+                    stopBtn.click();
+                    fetchData(code.data);
+                }
             }
             
-            // إخفاء الرسائل والنتائج السابقة
-            hideError();
-            resultDiv.style.display = 'none';
-            
-            fetchProductData(barcode);
-            
-            // مسح حقل الإدخال
-            barcodeInput.value = '';
+            requestAnimationFrame(scanQRCode);
         }
         
-        // دالة جلب بيانات المنتج من جوجل شيت
-        async function fetchProductData(barcode) {
+        // جلب البيانات من Google Sheets
+        async function fetchData(barcode) {
             try {
-                // عرض مؤشر التحميل
-                loading.style.display = 'block';
+                loading.style.display = "block";
+                errorMsg.style.display = "none";
+                resultDiv.style.display = "none";
                 
-                // جلب البيانات من API
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+                // إضافة timestamp لمنع التخزين المؤقت
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}&t=${timestamp}`);
                 
                 if (!response.ok) {
-                    throw new Error("خطأ في الاتصال بالسيرفر");
+                    throw new Error("خطأ في الاتصال بالسيرفر: " + response.status);
                 }
                 
                 const data = await response.json();
+                console.log("API Response:", data);
                 
-                // إخفاء مؤشر التحميل
-                loading.style.display = 'none';
+                loading.style.display = "none";
                 
-                // التحقق من وجود البيانات
                 if (data.status === "error") {
-                    throw new Error(data.message || "المنتج غير موجود");
+                    throw new Error(data.message || "البيانات غير متوفرة");
                 }
                 
-                // عرض البيانات
-                document.getElementById('product-num').textContent = data.product_num || "-";
-                document.getElementById('product-name').textContent = data.product_name || "-";
-                document.getElementById('product-date').textContent = data.product_date || "-";
-                resultDiv.style.display = 'block';
+                // تعبئة البيانات مع معالجة القيم الفارغة
+                const setValue = (id, value) => {
+                    document.getElementById(id).textContent = value || "-";
+                };
+                
+                setValue('functional-loc', data["Functional Loc."]);
+                setValue('covering-area', data["Covering Area"]);
+                setValue('description', data["Description"]);
+                setValue('category-desc', data["Category Description"]);
+                setValue('inspection-date', data["Last Inspection Date"]);
+                setValue('testing-date', data["Last Testing Date"]);
+                setValue('operating-area', data["Operating Area"]);
+                setValue('business-line', data["Business Line"]);
+                setValue('city', data["City"]);
+                setValue('ss', data["S/s"]);
+                setValue('serial-number', data["Serial Number"]);
+                setValue('object-type', data["Object Type"]);
+                setValue('location', data["Location"]);
+                setValue('owning-dept', data["Owning Dept."]);
+                setValue('business-operating-area', data["Business+Operating Area"]);
+                
+                resultDiv.style.display = "block";
+                barcodeInput.value = "";
                 
             } catch (error) {
-                console.error("Error:", error);
-                loading.style.display = 'none';
+                loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                console.error("Fetch Error:", error);
             }
         }
         
-        // دالة عرض رسالة الخطأ
         function showError(message) {
             errorMsg.textContent = message;
-            errorMsg.style.display = 'block';
+            errorMsg.style.display = "block";
         }
         
-        // دالة إخفاء رسالة الخطأ
-        function hideError() {
-            errorMsg.style.display = 'none';
-        }
-        
-        // تنظيف الموارد عند إغلاق الصفحة
-        window.addEventListener('beforeunload', stopScanner);
+        // السماح بإدخال البيانات بالضغط على Enter
+        barcodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
     </script>
 </body>
 </html>
