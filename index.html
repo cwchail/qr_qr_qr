@@ -405,20 +405,40 @@
                 resultDiv.style.display = "none";
                 exitEditMode();
                 
+                // إضافة تأخير لضمان استقرار الاتصال
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 const params = new URLSearchParams();
                 params.append('barcode', barcode);
                 params.append('t', Date.now());
                 
-                const response = await fetch(`${API_URL}?${params.toString()}`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
+                console.log('إرسال طلب إلى:', `${API_URL}?${params.toString()}`);
                 
-                if (!response.ok) {
-                    throw new Error("خطأ في استجابة السيرفر");
+                let response;
+                try {
+                    response = await fetch(`${API_URL}?${params.toString()}`, {
+                        method: 'GET',
+                        redirect: 'follow',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } catch (fetchError) {
+                    console.error('خطأ في Fetch:', fetchError);
+                    throw new Error("تعذر الاتصال بالخادم. الرجاء التحقق من اتصال الإنترنت.");
                 }
                 
-                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(`خطأ في استجابة السيرفر: ${response.status}`);
+                }
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    console.error('خطأ في تحليل JSON:', jsonError);
+                    throw new Error("خطأ في معالجة البيانات من الخادم");
+                }
                 
                 if (data.status === "error") {
                     throw new Error(data.message || "البيانات غير متوفرة");
@@ -429,8 +449,16 @@
                 barcodeInput.value = "";
                 
             } catch (error) {
-                showError(error.message || "حدث خطأ أثناء جلب البيانات");
-                console.error("Fetch Error:", error);
+                console.error('تفاصيل الخطأ:', error);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    showError("تعذر الاتصال بالخادم. الرجاء التحقق من:");
+                    showError("- اتصال الإنترنت");
+                    showError("- رابط API الصحيح");
+                    showError("- صلاحيات النشر");
+                } else {
+                    showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                }
             } finally {
                 loading.style.display = "none";
             }
