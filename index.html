@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -70,6 +71,7 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
         }
         button:disabled {
             opacity: 0.5;
@@ -84,6 +86,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
         }
         #result {
             background: white;
@@ -152,6 +155,7 @@
             font-size: 16px;
             margin-top: 5px;
             box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
         }
         .edit-mode + .field-edit {
             display: block;
@@ -174,11 +178,15 @@
             background: rgba(52,168,83,0.1);
             display: none;
         }
+        h1 {
+            color: #4285F4;
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        <h1>نظام إدارة المعدات بالباركود</h1>
         
         <div id="camera-active-status" class="camera-status camera-active">
             الكاميرا تعمل الآن
@@ -210,7 +218,7 @@
         <div id="success-message" class="success-message"></div>
         
         <div id="result">
-            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المعدة</h2>
             <button id="edit-btn">تمكين التعديل</button>
             <button id="save-changes-btn">حفظ التغييرات</button>
             
@@ -293,8 +301,8 @@
     </div>
 
     <script>
-        // الرابط الجديد لجوجل شيت
-        const API_URL = "https://script.google.com/macros/s/AKfycbzpwSRHaXEwoZ7Agv33bTeeP5PKqKUmaAiutK5kN-6YKFWH5mo6wCozIkotFQqyI0Y5/exec";
+        // استبدل هذا الرابط برابط البرنامج النصي الخاص بك بعد النشر
+        const API_URL = "https://script.google.com/macros/s/AKfycbzxPIh-No-GxL4sq4rCmH35YjVsFz4DJ9M0uQcvH-qLAkzJbBA3e78BF5bnGWu6Uymn/exec;
         
         // عناصر DOM
         const video = document.getElementById('video');
@@ -397,7 +405,6 @@
                 resultDiv.style.display = "none";
                 exitEditMode();
                 
-                // استخدام URLSearchParams لضمان ترميز الباركود بشكل صحيح
                 const params = new URLSearchParams();
                 params.append('barcode', barcode);
                 params.append('t', Date.now());
@@ -435,9 +442,9 @@
                 {id: 'functional-loc', key: "Functional Loc."},
                 {id: 'covering-area', key: "Covering Area"},
                 {id: 'description', key: "Description"},
-                {id: 'category-desc', key: "Category Description"},
-                {id: 'inspection-date', key: "Last Inspection Date"},
-                {id: 'testing-date', key: "Last Testing Date"},
+                {id: 'category-desc', key: "Regay Description"},
+                {id: 'inspection-date', key: "Inspection Dataset"},
+                {id: 'testing-date', key: "Testing Data"},
                 {id: 'operating-area', key: "Operating Area"},
                 {id: 'business-line', key: "Business Line"},
                 {id: 'city', key: "City"},
@@ -446,11 +453,13 @@
                 {id: 'object-type', key: "Object Type"},
                 {id: 'location', key: "Location"},
                 {id: 'owning-dept', key: "Owning Dept."},
-                {id: 'business-operating-area', key: "Business+Operating Area"}
+                {id: 'business-operating-area', key: "Business-Operating Area"}
             ];
             
             fields.forEach(field => {
-                document.getElementById(field.id).textContent = data[field.key] || "-";
+                const value = data[field.key] || "-";
+                document.getElementById(field.id).textContent = value;
+                document.getElementById(`${field.id}-edit`).value = value;
             });
         }
         
@@ -477,7 +486,6 @@
                 
                 if (valueElement && editElement) {
                     valueElement.classList.add('edit-mode');
-                    editElement.value = valueElement.textContent;
                     editElement.style.display = 'block';
                 }
             });
@@ -515,9 +523,9 @@
                 formData.append('Functional Loc.', document.getElementById('functional-loc-edit').value);
                 formData.append('Covering Area', document.getElementById('covering-area-edit').value);
                 formData.append('Description', document.getElementById('description-edit').value);
-                formData.append('Category Description', document.getElementById('category-desc-edit').value);
-                formData.append('Last Inspection Date', document.getElementById('inspection-date-edit').value);
-                formData.append('Last Testing Date', document.getElementById('testing-date-edit').value);
+                formData.append('Regay Description', document.getElementById('category-desc-edit').value);
+                formData.append('Inspection Dataset', document.getElementById('inspection-date-edit').value);
+                formData.append('Testing Data', document.getElementById('testing-date-edit').value);
                 formData.append('Operating Area', document.getElementById('operating-area-edit').value);
                 formData.append('Business Line', document.getElementById('business-line-edit').value);
                 formData.append('City', document.getElementById('city-edit').value);
@@ -526,7 +534,7 @@
                 formData.append('Object Type', document.getElementById('object-type-edit').value);
                 formData.append('Location', document.getElementById('location-edit').value);
                 formData.append('Owning Dept.', document.getElementById('owning-dept-edit').value);
-                formData.append('Business+Operating Area', document.getElementById('business-operating-area-edit').value);
+                formData.append('Business-Operating Area', document.getElementById('business-operating-area-edit').value);
                 
                 // إرسال البيانات المعدلة إلى السيرفر
                 const response = await fetch(API_URL, {
