@@ -146,6 +146,8 @@
 <body>
     <div class="container">
         <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+
+        <!-- عرض الكاميرا -->
         <div id="scanner-container">
             <video id="video" playsinline></video>
             <canvas id="canvas"></canvas>
@@ -153,76 +155,97 @@
                 <div class="scanner-line"></div>
             </div>
         </div>
+
+        <!-- أزرار التحكم -->
         <div class="controls">
             <button id="start-btn">بدء المسح</button>
             <button id="stop-btn" disabled>إيقاف المسح</button>
         </div>
+
+        <!-- إدخال الباركود يدويًا -->
         <div id="manual-input">
             <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
             <button id="search-btn">بحث</button>
         </div>
+
+        <!-- حالة التحميل والخطأ -->
         <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
 
         <!-- نتائج البحث -->
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <span class="field-value" id="functional-loc">-</span>
             </div>
+
             <div class="product-field">
                 <span class="field-label">منطقة التغطية:</span>
                 <input type="text" id="covering-area" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">الوصف:</span>
                 <textarea id="description" class="editable-field" rows="3" readonly></textarea>
             </div>
+
             <div class="product-field">
                 <span class="field-label">وصف الفئة:</span>
                 <input type="text" id="category-desc" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">تاريخ آخر تفتيش:</span>
                 <input type="date" id="inspection-date" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">تاريخ آخر اختبار:</span>
                 <input type="date" id="testing-date" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">منطقة التشغيل:</span>
                 <input type="text" id="operating-area" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">خط الأعمال:</span>
                 <input type="text" id="business-line" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">المدينة:</span>
                 <input type="text" id="city" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">S/s:</span>
                 <input type="text" id="ss" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">الرقم التسلسلي:</span>
                 <input type="text" id="serial-number" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">نوع الكائن:</span>
                 <input type="text" id="object-type" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">الموقع:</span>
                 <input type="text" id="location" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">القسم المالك:</span>
                 <input type="text" id="owning-dept" class="editable-field" readonly />
             </div>
+
             <div class="product-field">
                 <span class="field-label">منطقة الأعمال+التشغيل:</span>
                 <input type="text" id="business-operating-area" class="editable-field" readonly />
@@ -235,6 +258,7 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyuYlKCU4_7xBe90cf1WILsA49tXg1d6Pd6sF8vgTNSMjMazvMvm8Nt9HZNMFJ_r9Jq/exec ";
+
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -255,9 +279,7 @@
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" }
-                });
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
                 video.play();
                 startBtn.disabled = true;
@@ -300,6 +322,7 @@
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
+
                 if (code) {
                     stopBtn.click();
                     fetchData(code.data);
@@ -319,6 +342,7 @@
                 const data = await response.json();
 
                 loading.style.display = "none";
+
                 if (data.status === "error") {
                     throw new Error(data.message);
                 }
@@ -379,9 +403,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedData)
                 });
 
@@ -397,6 +419,7 @@
             }
         });
 
+        // عرض رسالة الخطأ
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
