@@ -293,7 +293,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxO2-22FIqMfhfmC490IyizC0d0luA55LF8oxfgclwqaeeMdt4DkKqlY-dmc3EBtc2N/exec";
+        // الرابط الجديد لجوجل شيت
+        const API_URL = "https://script.google.com/macros/s/AKfycbzpwSRHaXEwoZ7Agv33bTeeP5PKqKUmaAiutK5kN-6YKFWH5mo6wCozIkotFQqyI0Y5/exec";
         
         // عناصر DOM
         const video = document.getElementById('video');
@@ -318,16 +319,7 @@
         let isEditMode = false;
         let currentBarcode = '';
         
-        // مستمعي الأحداث
-        startBtn.addEventListener('click', startScanner);
-        stopBtn.addEventListener('click', stopScanner);
-        searchBtn.addEventListener('click', searchBarcode);
-        editBtn.addEventListener('click', toggleEditMode);
-        saveChangesBtn.addEventListener('click', saveChanges);
-        barcodeInput.addEventListener('keypress', handleEnterKey);
-        window.addEventListener('DOMContentLoaded', initPage);
-
-        // دالة بدء المسح
+        // بدء المسح
         async function startScanner() {
             try {
                 resetUI();
@@ -352,7 +344,7 @@
             }
         }
         
-        // دالة إيقاف المسح
+        // إيقاف المسح
         function stopScanner() {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -363,7 +355,7 @@
             updateScannerUI(false);
         }
         
-        // دالة البحث يدوياً
+        // البحث يدوياً
         function searchBarcode() {
             const barcode = barcodeInput.value.trim();
             if (barcode) {
@@ -373,7 +365,7 @@
             }
         }
         
-        // دالة مسح QR Code
+        // مسح QR Code
         function scanQRCode() {
             if (!scanning) return;
             
@@ -396,7 +388,7 @@
             requestAnimationFrame(scanQRCode);
         }
         
-        // دالة جلب البيانات من Google Sheets
+        // جلب البيانات من Google Sheets
         async function fetchData(barcode) {
             try {
                 currentBarcode = barcode;
@@ -405,11 +397,18 @@
                 resultDiv.style.display = "none";
                 exitEditMode();
                 
-                const timestamp = new Date().getTime();
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}&t=${timestamp}`);
+                // استخدام URLSearchParams لضمان ترميز الباركود بشكل صحيح
+                const params = new URLSearchParams();
+                params.append('barcode', barcode);
+                params.append('t', Date.now());
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
                 
                 if (!response.ok) {
-                    throw new Error("خطأ في الاتصال بالسيرفر: " + response.status);
+                    throw new Error("خطأ في استجابة السيرفر");
                 }
                 
                 const data = await response.json();
@@ -430,7 +429,7 @@
             }
         }
         
-        // دالة عرض البيانات
+        // عرض البيانات
         function displayData(data) {
             const fields = [
                 {id: 'functional-loc', key: "Functional Loc."},
@@ -455,7 +454,7 @@
             });
         }
         
-        // دالة تفعيل/تعطيل وضع التعديل
+        // تفعيل/تعطيل وضع التعديل
         function toggleEditMode() {
             isEditMode = !isEditMode;
             
@@ -470,7 +469,7 @@
             }
         }
         
-        // دالة تفعيل وضع التعديل
+        // تفعيل وضع التعديل
         function enterEditMode() {
             document.querySelectorAll('.product-field').forEach(field => {
                 const valueElement = field.querySelector('.field-value');
@@ -484,7 +483,7 @@
             });
         }
         
-        // دالة تعطيل وضع التعديل
+        // تعطيل وضع التعديل
         function exitEditMode() {
             document.querySelectorAll('.product-field').forEach(field => {
                 const valueElement = field.querySelector('.field-value');
@@ -499,7 +498,7 @@
             isEditMode = false;
         }
         
-        // دالة حفظ التغييرات
+        // حفظ التغييرات
         async function saveChanges() {
             try {
                 if (!currentBarcode) {
@@ -510,35 +509,30 @@
                 saveChangesBtn.disabled = true;
                 
                 // جمع البيانات المعدلة
-                const updatedData = {
-                    barcode: currentBarcode,
-                    "Functional Loc.": document.getElementById('functional-loc-edit').value,
-                    "Covering Area": document.getElementById('covering-area-edit').value,
-                    "Description": document.getElementById('description-edit').value,
-                    "Category Description": document.getElementById('category-desc-edit').value,
-                    "Last Inspection Date": document.getElementById('inspection-date-edit').value,
-                    "Last Testing Date": document.getElementById('testing-date-edit').value,
-                    "Operating Area": document.getElementById('operating-area-edit').value,
-                    "Business Line": document.getElementById('business-line-edit').value,
-                    "City": document.getElementById('city-edit').value,
-                    "S/s": document.getElementById('ss-edit').value,
-                    "Serial Number": document.getElementById('serial-number-edit').value,
-                    "Object Type": document.getElementById('object-type-edit').value,
-                    "Location": document.getElementById('location-edit').value,
-                    "Owning Dept.": document.getElementById('owning-dept-edit').value,
-                    "Business+Operating Area": document.getElementById('business-operating-area-edit').value
-                };
+                const formData = new FormData();
+                formData.append('action', 'update');
+                formData.append('barcode', currentBarcode);
+                formData.append('Functional Loc.', document.getElementById('functional-loc-edit').value);
+                formData.append('Covering Area', document.getElementById('covering-area-edit').value);
+                formData.append('Description', document.getElementById('description-edit').value);
+                formData.append('Category Description', document.getElementById('category-desc-edit').value);
+                formData.append('Last Inspection Date', document.getElementById('inspection-date-edit').value);
+                formData.append('Last Testing Date', document.getElementById('testing-date-edit').value);
+                formData.append('Operating Area', document.getElementById('operating-area-edit').value);
+                formData.append('Business Line', document.getElementById('business-line-edit').value);
+                formData.append('City', document.getElementById('city-edit').value);
+                formData.append('S/s', document.getElementById('ss-edit').value);
+                formData.append('Serial Number', document.getElementById('serial-number-edit').value);
+                formData.append('Object Type', document.getElementById('object-type-edit').value);
+                formData.append('Location', document.getElementById('location-edit').value);
+                formData.append('Owning Dept.', document.getElementById('owning-dept-edit').value);
+                formData.append('Business+Operating Area', document.getElementById('business-operating-area-edit').value);
                 
                 // إرسال البيانات المعدلة إلى السيرفر
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'update',
-                        data: updatedData
-                    })
+                    body: formData,
+                    redirect: 'follow'
                 });
                 
                 if (!response.ok) {
@@ -548,8 +542,8 @@
                 const result = await response.json();
                 
                 if (result.status === "success") {
-                    displayData(updatedData);
-                    toggleEditMode();
+                    // إعادة جلب البيانات للتأكد من التحديث
+                    await fetchData(currentBarcode);
                     showSuccess("تم حفظ التغييرات بنجاح");
                 } else {
                     throw new Error(result.message || "فشل في حفظ التغييرات");
@@ -564,7 +558,7 @@
             }
         }
         
-        // دالة تحديث واجهة الماسح الضوئي
+        // تحديث واجهة الماسح الضوئي
         function updateScannerUI(isActive) {
             scanning = isActive;
             startBtn.disabled = isActive;
@@ -573,21 +567,20 @@
             cameraInactiveStatus.style.display = isActive ? 'none' : 'block';
         }
         
-        // دالة إعادة تعيين واجهة المستخدم
+        // إعادة تعيين واجهة المستخدم
         function resetUI() {
             resultDiv.style.display = 'none';
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
+            resetMessages();
             exitEditMode();
         }
         
-        // دالة إعادة تعيين الرسائل
+        // إعادة تعيين الرسائل
         function resetMessages() {
             errorMsg.style.display = 'none';
             successMsg.style.display = 'none';
         }
         
-        // دالة عرض رسالة الخطأ
+        // عرض رسالة الخطأ
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
@@ -596,7 +589,7 @@
             }, 5000);
         }
         
-        // دالة عرض رسالة النجاح
+        // عرض رسالة النجاح
         function showSuccess(message) {
             successMsg.textContent = message;
             successMsg.style.display = "block";
@@ -605,17 +598,26 @@
             }, 5000);
         }
         
-        // دالة التعامل مع زر Enter
+        // التعامل مع زر Enter
         function handleEnterKey(e) {
             if (e.key === 'Enter') {
                 searchBtn.click();
             }
         }
         
-        // دالة تهيئة الصفحة
+        // تهيئة الصفحة
         function initPage() {
             cameraInactiveStatus.style.display = 'block';
         }
+        
+        // مستمعي الأحداث
+        startBtn.addEventListener('click', startScanner);
+        stopBtn.addEventListener('click', stopScanner);
+        searchBtn.addEventListener('click', searchBarcode);
+        editBtn.addEventListener('click', toggleEditMode);
+        saveChangesBtn.addEventListener('click', saveChanges);
+        barcodeInput.addEventListener('keypress', handleEnterKey);
+        window.addEventListener('DOMContentLoaded', initPage);
     </script>
 </body>
 </html>
