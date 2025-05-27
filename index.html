@@ -163,6 +163,8 @@
         </div>
         <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
+
+        <!-- نتائج البحث -->
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
             <div class="product-field">
@@ -230,8 +232,9 @@
             <button id="save-btn" disabled>حفظ التغييرات</button>
         </div>
     </div>
+
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby-DwqPI_KKN42mE-aUhklmXhd5flIthie9dLUPS7seDjxLj0W8zkvChExIrS_ViKp6/exec ";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwbpHh_rohmsXlQSsBBUw_sP495z7HA2IR-bcEzcjh2oxo8EUaBQvvvCBLbF9AcKmd-/exec ";
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -278,7 +281,7 @@
             scanning = false;
         });
 
-        // البحث يدوياً
+        // البحث يدويًا
         searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
             if (barcode) {
@@ -353,7 +356,7 @@
             saveBtn.disabled = false;
         });
 
-        // حفظ التعديلات وإرسالها إلى Google Sheets
+        // حفظ التعديلات
         saveBtn.addEventListener('click', async () => {
             const updatedData = {
                 "Functional Loc.": document.getElementById('functional-loc').textContent,
