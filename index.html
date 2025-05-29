@@ -4,13 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>نظام مسح QR Code</title>
-  <!-- مكتبة jsQR لمسح QR Code -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
-  <!-- خطوط جوجل -->
   <link href="https://fonts.googleapis.com/css2?family=Tajawal :wght@400;700&display=swap" rel="stylesheet">
-
   <style>
-    /* تم تضمين الستايل الكامل هنا */
     :root {
       --primary: #4285F4;
       --success: #34A853;
@@ -339,19 +335,22 @@
         flex-direction: column;
       }
 
-      .field-label, .field-value, .field-input {
+      .field-label,
+      .field-value,
+      .field-input {
         width: 100%;
         min-width: 100%;
       }
 
-      .controls, #manual-input, .edit-controls {
+      .controls,
+      #manual-input,
+      .edit-controls {
         flex-direction: column;
         align-items: center;
       }
 
       button {
         width: 100%;
-        max-width: 300px;
       }
 
       #barcode-input {
@@ -479,6 +478,7 @@
     </div>
 
     <div class="edit-controls" id="edit-controls" style="display:none;">
+      <button id="edit-btn" class="edit-btn">تعديل البيانات</button>
       <button id="save-btn" class="save-btn">حفظ التعديلات</button>
       <button id="cancel-btn" class="cancel-btn">إلغاء التعديل</button>
     </div>
@@ -490,8 +490,7 @@
 </div>
 
 <script>
-  // استبدل بالرابطين بعد نشر Google Apps Script
-  const API_URL = "https://script.google.com/macros/s/AKfycbzDRZz2X68trlP2f562Lsd1cQmtiEjbTTK2Ds8OEbXZjfZNRGO2-lrz2T5BbeRX8WZn/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzDRZz2X68trlP2f562Lsd1cQmtiEjbTTK2Ds8OEbXZjfZNRGO2-lrz2T5BbeRX8WZn/exec ";
   const UPDATE_URL = "https://script.google.com/macros/s/AKfycby2HUdFFpsGFTeWYpXe_xj45voPImMZlJOFvqLXP3YKrFYD9_r8QOWSng45cvMmtS-U/exec ";
 
   const video = document.getElementById('video');
@@ -507,6 +506,8 @@
   const cameraStatus = document.getElementById('camera-status');
   const statusText = document.getElementById('status-text');
   const statusIcon = document.getElementById('status-icon');
+
+  const editBtn = document.getElementById('edit-btn');
   const saveBtn = document.getElementById('save-btn');
   const cancelBtn = document.getElementById('cancel-btn');
   const editControls = document.getElementById('edit-controls');
@@ -579,8 +580,9 @@
 
   let stream = null;
   let scanning = false;
+  let isEditing = false;
+  let currentData = {};
 
-  // تحديث حالة الكاميرا
   function updateCameraStatus(message, isActive) {
     cameraStatus.style.display = 'flex';
     statusText.textContent = message;
@@ -613,7 +615,6 @@
     }
   });
 
-  // إيقاف المسح
   stopBtn.addEventListener('click', () => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
@@ -626,7 +627,6 @@
     updateCameraStatus("الكاميرا متوقفة", false);
   });
 
-  // البحث يدوياً
   searchBtn.addEventListener('click', () => {
     const barcode = barcodeInput.value.trim();
     if (barcode) {
@@ -636,7 +636,6 @@
     }
   });
 
-  // مسح QR Code
   function scanQRCode() {
     if (!scanning) return;
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -655,7 +654,6 @@
     requestAnimationFrame(scanQRCode);
   }
 
-  // جلب البيانات من Google Sheets
   async function fetchData(barcode) {
     try {
       loading.style.display = "block";
@@ -665,14 +663,19 @@
       const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
       const data = await response.json();
       if (data.status === "error") throw new Error(data.message);
+
+      currentData = data;
       barcodeValue.value = data["Functional Loc."];
       barcodeDisplay.textContent = data["Functional Loc."];
+
       for (const key in fieldElements) {
         fieldElements[key].display.textContent = data[key] || "-";
         fieldElements[key].input.value = data[key] || "";
       }
+
       resultDiv.style.display = "block";
       updateCameraStatus("تم تحميل البيانات بنجاح", "success");
+      disableEditMode();
     } catch (error) {
       showError(error.message || "حدث خطأ أثناء جلب البيانات");
       updateCameraStatus("فشل في جلب البيانات", false);
@@ -681,11 +684,43 @@
     }
   }
 
-  // حدث زر الحفظ
+  function enableEditMode() {
+    isEditing = true;
+    for (const key in fieldElements) {
+      if (key !== "Functional Loc.") {
+        fieldElements[key].display.style.display = "none";
+        fieldElements[key].input.style.display = "block";
+      }
+    }
+    editControls.style.display = "flex";
+  }
+
+  function disableEditMode() {
+    isEditing = false;
+    for (const key in fieldElements) {
+      if (key !== "Functional Loc.") {
+        fieldElements[key].display.style.display = "block";
+        fieldElements[key].input.style.display = "none";
+      }
+    }
+    editControls.style.display = "none";
+  }
+
+  editBtn.addEventListener('click', enableEditMode);
+  cancelBtn.addEventListener('click', () => {
+    for (const key in fieldElements) {
+      if (key !== "Functional Loc.") {
+        fieldElements[key].input.value = currentData[key] || "";
+      }
+    }
+    disableEditMode();
+  });
+
   saveBtn.addEventListener('click', async () => {
     try {
       loading.style.display = "block";
       errorMsg.style.display = "none";
+
       const updatedData = {
         barcode: barcodeValue.value,
         "Covering Area": fieldElements["Covering Area"].input.value,
@@ -703,18 +738,18 @@
         "Owning Dept.": fieldElements["Owning Dept."].input.value,
         "Business+Operating Area": fieldElements["Business+Operating Area"].input.value
       };
+
       const response = await fetch(UPDATE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData)
       });
+
       const result = await response.json();
       if (result.status === "success") {
         alert("تم تحديث البيانات بنجاح!");
       } else {
-        throw new Error(result.message || "حدث خطأ أثناء التحديث");
+        throw new Error(result.message || "فشل في تحديث البيانات");
       }
     } catch (error) {
       showError(error.message || "فشل في تحديث البيانات");
@@ -723,13 +758,26 @@
     }
   });
 
-  // إظهار رسالة الخطأ
   function showError(message) {
     errorMsg.textContent = message;
     errorMsg.style.display = "block";
   }
 
-  // تحديث حالة الكاميرا عند التحميل
+  function updateCameraStatus(message, isActive) {
+    cameraStatus.style.display = 'flex';
+    statusText.textContent = message;
+    if (isActive === true) {
+      cameraStatus.className = 'camera-status status-active';
+      statusIcon.textContent = '📷';
+    } else if (isActive === false) {
+      cameraStatus.className = 'camera-status status-inactive';
+      statusIcon.textContent = '❌';
+    } else {
+      cameraStatus.className = 'camera-status status-success';
+      statusIcon.textContent = '✅';
+    }
+  }
+
   updateCameraStatus("الكاميرا متوقفة - اضغط على بدء المسح لتفعيلها", false);
 </script>
 
