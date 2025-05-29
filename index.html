@@ -198,6 +198,25 @@
             margin: 30px;
             font-size: 20px;
             color: var(--primary);
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            width: 80%;
+            max-width: 400px;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
         }
         
         #error-message {
@@ -336,7 +355,9 @@
             padding-top: 20px;
             border-top: 2px solid #eee;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
         
         #save-btn {
@@ -357,8 +378,23 @@
         #save-success {
             color: var(--secondary);
             font-weight: bold;
-            margin-top: 15px;
             display: none;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(52, 168, 83, 0.1);
+            width: 100%;
+        }
+        
+        #save-error {
+            color: var(--danger);
+            font-weight: bold;
+            display: none;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(234, 67, 53, 0.1);
+            width: 100%;
         }
         
         .footer {
@@ -429,6 +465,10 @@
         
         <div id="loading">
             <i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+            <p id="loading-time">المدة: 0 ثانية</p>
         </div>
         
         <div id="error-message">
@@ -506,6 +546,7 @@
             <div class="save-section">
                 <button id="save-btn"><i class="fas fa-save"></i> حفظ التعديلات</button>
                 <div id="save-success"><i class="fas fa-check-circle"></i> تم حفظ التعديلات بنجاح!</div>
+                <div id="save-error"><i class="fas fa-exclamation-triangle"></i> <span id="save-error-message"></span></div>
             </div>
         </div>
         
@@ -527,6 +568,8 @@
         const saveBtn = document.getElementById('save-btn');
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
+        const progressBar = document.getElementById('progress-bar');
+        const loadingTime = document.getElementById('loading-time');
         const errorMsg = document.getElementById('error-message');
         const errorContent = document.getElementById('error-content');
         const retryBtn = document.getElementById('retry-btn');
@@ -536,13 +579,20 @@
         const cameraNotification = document.getElementById('camera-notification');
         const scannerContainer = document.getElementById('scanner-container');
         const saveSuccess = document.getElementById('save-success');
+        const saveError = document.getElementById('save-error');
+        const saveErrorMessage = document.getElementById('save-error-message');
         
         // متغيرات النظام
         let stream = null;
         let scanning = false;
-        let currentBarcode = ""; // لتخزين الباركود الحالي
-        let lastScannedBarcode = ""; // لتخزين آخر باركود تم مسحه
-        
+        let currentBarcode = "";
+        let lastScannedBarcode = "";
+        let requestTimer = 0;
+        let progressInterval;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+        const TIMEOUT_DURATION = 30000;
+
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
@@ -642,16 +692,21 @@
                 errorMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 saveSuccess.style.display = "none";
+                saveError.style.display = "none";
                 
-                // إضافة مؤقت لتفادي مشاكل الشبكة
+                // بدء مؤشر التقدم
+                startProgress();
+                
+                // إرسال الطلب مع مهلة أطول
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
                 
                 const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`, {
                     signal: controller.signal
                 });
                 
                 clearTimeout(timeoutId);
+                stopProgress();
                 
                 // التحقق من حالة الاستجابة
                 if (!response.ok) {
@@ -670,34 +725,66 @@
                 currentBarcode = barcode;
                 
                 // تعبئة البيانات في حقول الإدخال
-                document.getElementById('functional-loc').value = data["Functional Loc."] || "-";
-                document.getElementById('covering-area').value = data["Covering Area"] || "-";
-                document.getElementById('description').value = data["Description"] || "-";
-                document.getElementById('category-desc').value = data["Category Description"] || "-";
-                document.getElementById('inspection-date').value = data["Last Inspection Date"] || "-";
-                document.getElementById('testing-date').value = data["Last Testing Date"] || "-";
-                document.getElementById('operating-area').value = data["Operating Area"] || "-";
-                document.getElementById('business-line').value = data["Business Line"] || "-";
-                document.getElementById('city').value = data["City"] || "-";
-                document.getElementById('ss').value = data["S/s"] || "-";
-                document.getElementById('serial-number').value = data["Serial Number"] || "-";
-                document.getElementById('object-type').value = data["Object Type"] || "-";
-                document.getElementById('location').value = data["Location"] || "-";
-                document.getElementById('owning-dept').value = data["Owning Dept."] || "-";
-                document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "-";
+                fillDataFields(data);
                 
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
+                retryCount = 0;
                 
             } catch (error) {
+                stopProgress();
                 loading.style.display = "none";
                 
                 if (error.name === 'AbortError') {
-                    showError("انتهى وقت الطلب. الرجاء التحقق من اتصال الإنترنت.");
+                    if (retryCount < MAX_RETRIES) {
+                        retryCount++;
+                        showError(`استغرق الطلب وقتاً طويلاً. جاري إعادة المحاولة (${retryCount}/${MAX_RETRIES})`);
+                        setTimeout(() => fetchData(barcode), 2000);
+                    } else {
+                        showError("انتهت محاولات إعادة الاتصال. الخادم قد يكون مشغولاً أو اتصال الإنترنت ضعيف.");
+                    }
                 } else {
                     showError(error.message || "حدث خطأ أثناء جلب البيانات");
                 }
             }
+        }
+        
+        // تعبئة حقول البيانات
+        function fillDataFields(data) {
+            document.getElementById('functional-loc').value = data["Functional Loc."] || "-";
+            document.getElementById('covering-area').value = data["Covering Area"] || "-";
+            document.getElementById('description').value = data["Description"] || "-";
+            document.getElementById('category-desc').value = data["Category Description"] || "-";
+            document.getElementById('inspection-date').value = data["Last Inspection Date"] || "-";
+            document.getElementById('testing-date').value = data["Last Testing Date"] || "-";
+            document.getElementById('operating-area').value = data["Operating Area"] || "-";
+            document.getElementById('business-line').value = data["Business Line"] || "-";
+            document.getElementById('city').value = data["City"] || "-";
+            document.getElementById('ss').value = data["S/s"] || "-";
+            document.getElementById('serial-number').value = data["Serial Number"] || "-";
+            document.getElementById('object-type').value = data["Object Type"] || "-";
+            document.getElementById('location').value = data["Location"] || "-";
+            document.getElementById('owning-dept').value = data["Owning Dept."] || "-";
+            document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "-";
+        }
+        
+        // بدء مؤشر التقدم
+        function startProgress() {
+            requestTimer = 0;
+            progressBar.style.width = "0%";
+            loadingTime.textContent = "المدة: 0 ثانية";
+            
+            progressInterval = setInterval(() => {
+                requestTimer++;
+                const progressPercentage = (requestTimer / (TIMEOUT_DURATION / 1000)) * 100;
+                progressBar.style.width = `${Math.min(progressPercentage, 100)}%`;
+                loadingTime.textContent = `المدة: ${requestTimer} ثانية`;
+            }, 1000);
+        }
+        
+        // إيقاف مؤشر التقدم
+        function stopProgress() {
+            clearInterval(progressInterval);
         }
         
         // حفظ التعديلات على Google Sheets
@@ -705,12 +792,14 @@
             try {
                 // التحقق من اتصال الإنترنت
                 if (!navigator.onLine) {
-                    showError("لا يوجد اتصال بالإنترنت. الرجاء التحقق من اتصالك.");
+                    showSaveError("لا يوجد اتصال بالإنترنت. الرجاء التحقق من اتصالك.");
                     return;
                 }
                 
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+                saveSuccess.style.display = "none";
+                saveError.style.display = "none";
                 
                 // جمع البيانات من الحقول
                 const dataToSave = {
@@ -734,9 +823,9 @@
                     }
                 };
                 
-                // إضافة مؤقت لتفادي مشاكل الشبكة
+                // إضافة مهلة للحفظ
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 ثانية
                 
                 // إرسال البيانات للتحديث
                 const response = await fetch(API_URL, {
@@ -750,6 +839,11 @@
                 
                 clearTimeout(timeoutId);
                 
+                // التحقق من حالة الاستجابة
+                if (!response.ok) {
+                    throw new Error(`فشل حفظ التعديلات (${response.status} ${response.statusText})`);
+                }
+                
                 const result = await response.json();
                 
                 if (result.status === "success") {
@@ -762,10 +856,14 @@
                 }
                 
             } catch (error) {
+                console.error("Save Error:", error);
+                
                 if (error.name === 'AbortError') {
-                    showError("انتهى وقت الطلب. الرجاء المحاولة مرة أخرى.");
+                    showSaveError("انتهى وقت الحفظ. الرجاء المحاولة مرة أخرى.");
+                } else if (error.message.includes("CORS")) {
+                    showSaveError("مشكلة في سياسات الأمان. الرجاء التحقق من إعدادات الخادم.");
                 } else {
-                    showError(error.message || "حدث خطأ أثناء حفظ التعديلات");
+                    showSaveError(error.message || "حدث خطأ أثناء حفظ التعديلات");
                 }
             } finally {
                 saveBtn.disabled = false;
@@ -802,6 +900,11 @@
             loading.style.display = "none";
         }
         
+        function showSaveError(message) {
+            saveErrorMessage.textContent = message;
+            saveError.style.display = "block";
+        }
+        
         // إغلاق الكاميرا عند مغادرة الصفحة
         window.addEventListener('beforeunload', () => {
             if (stream) {
@@ -821,10 +924,18 @@
             if (errorMsg.style.display === "block") {
                 errorMsg.style.display = "none";
             }
+            if (saveError.style.display === "block") {
+                saveError.style.display = "none";
+            }
         });
         
         window.addEventListener('offline', () => {
             showError("تم فقدان اتصال الإنترنت. الرجاء التحقق من اتصالك.");
+        });
+        
+        // تحسين تجربة المستخدم: التركيز على حقل الإدخال عند التحميل
+        window.addEventListener('DOMContentLoaded', () => {
+            barcodeInput.focus();
         });
     </script>
 </body>
