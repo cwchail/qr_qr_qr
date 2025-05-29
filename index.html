@@ -16,6 +16,7 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
+            position: relative;
         }
         #scanner-container {
             width: 100%;
@@ -25,6 +26,7 @@
             border: 2px solid #333;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         #video {
             width: 100%;
@@ -70,10 +72,22 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background: #3367D6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        button:active {
+            transform: translateY(1px);
         }
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         #manual-input {
             margin: 20px 0;
@@ -84,6 +98,13 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            transition: border 0.3s;
+        }
+        #barcode-input:focus {
+            border-color: #4285F4;
+            outline: none;
+            box-shadow: 0 0 5px rgba(66,133,244,0.5);
         }
         #result {
             background: white;
@@ -91,7 +112,7 @@
             margin: 20px auto;
             max-width: 600px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: right;
             display: none;
         }
@@ -108,6 +129,7 @@
         }
         .field-value {
             font-size: 16px;
+            color: #333;
         }
         #loading {
             display: none;
@@ -123,11 +145,67 @@
             background: rgba(234,67,53,0.1);
             display: none;
         }
+        
+        /* مؤشر تشغيل الكاميرا */
+        #camera-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 20px;
+            height: 20px;
+            background-color: #EA4335;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(234,67,53,0.7);
+            display: none;
+            z-index: 100;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234,67,53,0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(234,67,53,0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234,67,53,0); }
+        }
+        
+        /* إشعار إيقاف الكاميرا */
+        #camera-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4285F4;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            font-weight: bold;
+        }
+        
+        .camera-active {
+            border-color: #4285F4 !important;
+            box-shadow: 0 0 15px rgba(66, 133, 244, 0.5) !important;
+        }
+        
+        .system-header {
+            background: linear-gradient(135deg, #4285F4, #34A853);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        <div id="camera-indicator"></div>
+        <div id="camera-notification">تم إيقاف الكاميرا تلقائياً</div>
+        
+        <div class="system-header">
+            <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        </div>
         
         <div id="scanner-container">
             <video id="video" playsinline></video>
@@ -138,8 +216,8 @@
         </div>
         
         <div class="controls">
-            <button id="start-btn">بدء المسح</button>
-            <button id="stop-btn" disabled>إيقاف المسح</button>
+            <button id="start-btn">بدء المسح <span style="font-size:14px">(تشغيل الكاميرا)</span></button>
+            <button id="stop-btn" disabled>إيقاف المسح <span style="font-size:14px">(إيقاف الكاميرا)</span></button>
         </div>
         
         <div id="manual-input">
@@ -228,6 +306,9 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+        const cameraIndicator = document.getElementById('camera-indicator');
+        const cameraNotification = document.getElementById('camera-notification');
+        const scannerContainer = document.getElementById('scanner-container');
         
         let stream = null;
         let scanning = false;
@@ -245,6 +326,10 @@
                 stopBtn.disabled = false;
                 scanning = true;
                 
+                // إظهار مؤشر الكاميرا وتفعيل التصميم
+                cameraIndicator.style.display = 'block';
+                scannerContainer.classList.add('camera-active');
+                
                 scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
@@ -253,14 +338,7 @@
         
         // إيقاف المسح
         stopBtn.addEventListener('click', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            video.srcObject = null;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            scanning = false;
+            stopCamera();
         });
         
         // البحث يدوياً
@@ -286,7 +364,7 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
-                    stopBtn.click();
+                    stopCamera();
                     fetchData(code.data);
                 }
             }
@@ -336,10 +414,39 @@
             }
         }
         
+        // إيقاف الكاميرا وإخفاء المؤشرات
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            scanning = false;
+            
+            // إخفاء مؤشر الكاميرا وإزالة التصميم
+            cameraIndicator.style.display = 'none';
+            scannerContainer.classList.remove('camera-active');
+            
+            // إظهار إشعار إيقاف الكاميرا
+            cameraNotification.style.display = 'block';
+            setTimeout(() => {
+                cameraNotification.style.display = 'none';
+            }, 3000);
+        }
+        
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
+        
+        // إغلاق الكاميرا عند مغادرة الصفحة
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
     </script>
 </body>
 </html>
