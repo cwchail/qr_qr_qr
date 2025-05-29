@@ -7,6 +7,19 @@
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4285F4;
+            --success: #34A853;
+            --warning: #FBBC05;
+            --danger: #EA4335;
+            --dark: #202124;
+            --light: #f8f9fa;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Tajawal', Arial, sans-serif;
             margin: 0;
@@ -14,25 +27,97 @@
             background: #f5f5f5;
             text-align: center;
             direction: rtl;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
         }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        
+        .company-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .company-logo span {
+            color: var(--danger);
+            position: relative;
+        }
+        .company-logo span::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            right: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--danger);
+            border-radius: 3px;
+        }
+        
+        h1 {
+            color: var(--dark);
+            margin: 10px 0;
+            font-size: 24px;
+            position: relative;
+            display: inline-block;
+        }
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 80px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
         #scanner-container {
             width: 100%;
             max-width: 500px;
             margin: 20px auto;
             position: relative;
             border: 2px solid #333;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: #000;
         }
         #video {
             width: 100%;
             display: block;
             background: #000;
+            min-height: 300px;
         }
         #canvas {
             display: none;
@@ -52,9 +137,9 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
-            background: #EA4335;
-            box-shadow: 0 0 10px rgba(234,67,53,0.7);
+            height: 4px;
+            background: var(--danger);
+            box-shadow: 0 0 15px rgba(234,67,53,0.8);
             animation: scan 2s infinite linear;
             pointer-events: none;
         }
@@ -62,144 +147,336 @@
             0% { top: 0; }
             100% { top: 100%; }
         }
+        
+        .camera-status {
+            margin: 15px 0;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            max-width: 500px;
+            margin: 15px auto;
+            transition: all 0.3s ease;
+        }
+        .status-active {
+            background-color: rgba(66, 133, 244, 0.15);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        .status-inactive {
+            background-color: rgba(234, 67, 53, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        .status-success {
+            background-color: rgba(52, 168, 83, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .status-icon {
+            font-size: 20px;
+        }
+        
         .controls {
-            margin: 20px 0;
+            margin: 25px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         button {
-            background: #4285F4;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin: 0 5px;
-            border-radius: 5px;
+            padding: 12px 25px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-family: 'Tajawal', sans-serif;
+            font-weight: bold;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(66, 133, 244, 0.2);
         }
         button:hover {
-            background: #3367D6;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(66, 133, 244, 0.3);
         }
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
+        button.edit-btn {
+            background: var(--warning);
+            box-shadow: 0 4px 6px rgba(251, 188, 5, 0.2);
+        }
+        button.edit-btn:hover {
+            box-shadow: 0 6px 12px rgba(251, 188, 5, 0.3);
+        }
+        button.save-btn {
+            background: var(--success);
+            box-shadow: 0 4px 6px rgba(52, 168, 83, 0.2);
+        }
+        button.save-btn:hover {
+            box-shadow: 0 6px 12px rgba(52, 168, 83, 0.3);
+        }
+        button.cancel-btn {
+            background: var(--danger);
+            box-shadow: 0 4px 6px rgba(234, 67, 53, 0.2);
+        }
+        button.cancel-btn:hover {
+            box-shadow: 0 6px 12px rgba(234, 67, 53, 0.3);
+        }
+        
         #manual-input {
-            margin: 20px 0;
+            margin: 25px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         #barcode-input {
-            padding: 10px;
-            width: 200px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px 15px;
+            width: 250px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 16px;
             font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s ease;
         }
+        #barcode-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        
+        #loading {
+            display: none;
+            margin: 30px;
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: bold;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(66, 133, 244, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #error-message {
+            color: var(--danger);
+            margin: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(234,67,53,0.1);
+            display: none;
+            font-weight: bold;
+        }
+        
         #result {
             background: white;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 600px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin: 30px auto;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             text-align: right;
             display: none;
+            border: 1px solid #eee;
         }
-        .product-field {
-            margin-bottom: 15px;
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid #f0f5ff;
+        }
+        .result-header h2 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 22px;
+        }
+        
+        .product-field {
+            margin-bottom: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            text-align: right;
         }
         .field-label {
             font-weight: bold;
-            color: #4285F4;
+            color: var(--dark);
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            width: 200px;
+            position: relative;
+            padding-left: 15px;
+        }
+        .field-label::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--primary);
+            font-size: 20px;
         }
         .field-value {
             font-size: 16px;
+            flex: 1;
+            min-width: 250px;
+            padding: 8px 0;
+            word-break: break-word;
         }
-        #loading {
-            display: none;
-            margin: 20px;
-            font-size: 18px;
-            color: #4285F4;
-        }
-        #error-message {
-            color: #EA4335;
-            margin: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            background: rgba(234,67,53,0.1);
-            display: none;
-        }
-        .camera-status {
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            display: none;
-        }
-        .status-active {
-            background-color: rgba(66, 133, 244, 0.2);
-            color: #4285F4;
-            border: 1px solid #4285F4;
-        }
-        .status-inactive {
-            background-color: rgba(234, 67, 53, 0.2);
-            color: #EA4335;
-            border: 1px solid #EA4335;
-        }
-        .status-icon {
-            margin-left: 8px;
-            font-size: 18px;
-        }
-        .instructions {
-            background-color: #f8f9fa;
-            padding: 15px;
+        .field-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            margin: 20px 0;
+            font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .field-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        
+        .edit-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
             text-align: right;
-            border-right: 4px solid #4285F4;
+            border-right: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        .instructions::before {
+            content: '💡';
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 40px;
+            opacity: 0.1;
         }
         .instructions h3 {
-            color: #4285F4;
+            color: var(--primary);
             margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .instructions ul {
             padding-right: 20px;
             margin-bottom: 0;
+            list-style-type: none;
         }
         .instructions li {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            padding-right: 25px;
         }
-        .company-logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4285F4;
-            margin-bottom: 10px;
+        .instructions li::before {
+            content: "→";
+            position: absolute;
+            right: 0;
+            top: 0;
+            color: var(--primary);
         }
-        .company-logo span {
-            color: #EA4335;
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+            }
+            .product-field {
+                flex-direction: column;
+            }
+            .field-label, .field-value, .field-input {
+                width: 100%;
+                min-width: 100%;
+            }
+            .controls, #manual-input, .edit-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+            #barcode-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="company-logo">شركة <span>جيزة</span> العربية للأنظمة</div>
-        <h1>نظام مسح QR Code</h1>
+        <div class="header">
+            <div class="company-logo">
+                <span>جيزة</span> العربية للأنظمة
+            </div>
+            <h1>نظام مسح QR Code</h1>
+        </div>
         
         <div class="instructions">
-            <h3>تعليمات الاستخدام:</h3>
+            <h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                تعليمات الاستخدام
+            </h3>
             <ul>
                 <li>اضغط على زر "بدء المسح" لتشغيل الكاميرا</li>
                 <li>وجّه الكاميرا نحو رمز QR حتى يتم مسحه</li>
                 <li>ستتوقف الكاميرا تلقائيًا عند نجاح عملية المسح</li>
                 <li>يمكنك إدخال الرمز يدويًا في حالة عدم نجاح المسح</li>
+                <li>بعد ظهور البيانات، يمكنك تعديلها باستثناء الباركود</li>
+                <li>اضغط على "حفظ التعديلات" لتحديث البيانات في النظام</li>
             </ul>
         </div>
         
@@ -217,85 +494,161 @@
         </div>
         
         <div class="controls">
-            <button id="start-btn">بدء المسح</button>
-            <button id="stop-btn" disabled>إيقاف المسح</button>
+            <button id="start-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+                بدء المسح
+            </button>
+            <button id="stop-btn" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+                إيقاف المسح
+            </button>
         </div>
         
         <div id="manual-input">
             <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
-            <button id="search-btn">بحث</button>
+            <button id="search-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                بحث
+            </button>
         </div>
         
-        <div id="loading">جاري جلب البيانات...</div>
+        <div id="loading">
+            <div class="spinner"></div>
+            جاري جلب البيانات...
+        </div>
         <div id="error-message"></div>
         
         <div id="result">
-            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+            <div class="result-header">
+                <h2>تفاصيل المهمة</h2>
+                <button id="edit-btn" class="edit-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    تعديل البيانات
+                </button>
+            </div>
+            
+            <!-- Hidden field to store the barcode value -->
+            <input type="hidden" id="barcode-value">
+            
+            <div class="product-field">
+                <span class="field-label">الباركود:</span>
+                <span class="field-value" id="barcode-display">-</span>
+            </div>
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <span class="field-value" id="functional-loc">-</span>
+                <input type="text" class="field-input" id="functional-loc-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التغطية:</span>
                 <span class="field-value" id="covering-area">-</span>
+                <input type="text" class="field-input" id="covering-area-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">الوصف:</span>
                 <span class="field-value" id="description">-</span>
+                <input type="text" class="field-input" id="description-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">وصف الفئة:</span>
                 <span class="field-value" id="category-desc">-</span>
+                <input type="text" class="field-input" id="category-desc-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">تاريخ آخر تفتيش:</span>
                 <span class="field-value" id="inspection-date">-</span>
+                <input type="text" class="field-input" id="inspection-date-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">تاريخ آخر اختبار:</span>
                 <span class="field-value" id="testing-date">-</span>
+                <input type="text" class="field-input" id="testing-date-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التشغيل:</span>
                 <span class="field-value" id="operating-area">-</span>
+                <input type="text" class="field-input" id="operating-area-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">خط الأعمال:</span>
                 <span class="field-value" id="business-line">-</span>
+                <input type="text" class="field-input" id="business-line-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">المدينة:</span>
                 <span class="field-value" id="city">-</span>
+                <input type="text" class="field-input" id="city-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">S/s:</span>
                 <span class="field-value" id="ss">-</span>
+                <input type="text" class="field-input" id="ss-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">الرقم التسلسلي:</span>
                 <span class="field-value" id="serial-number">-</span>
+                <input type="text" class="field-input" id="serial-number-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">نوع الكائن:</span>
                 <span class="field-value" id="object-type">-</span>
+                <input type="text" class="field-input" id="object-type-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">الموقع:</span>
                 <span class="field-value" id="location">-</span>
+                <input type="text" class="field-input" id="location-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">القسم المالك:</span>
                 <span class="field-value" id="owning-dept">-</span>
+                <input type="text" class="field-input" id="owning-dept-input" style="display:none;">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة الأعمال+التشغيل:</span>
                 <span class="field-value" id="business-operating-area">-</span>
+                <input type="text" class="field-input" id="business-operating-area-input" style="display:none;">
             </div>
+            
+            <div class="edit-controls" id="edit-controls" style="display:none;">
+                <button id="save-btn" class="save-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    حفظ التعديلات
+                </button>
+                <button id="cancel-btn" class="cancel-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    إلغاء التعديل
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            نظام مسح وتعديل QR Code - شركة جيزة العربية للأنظمة © 2023
         </div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxyYFfhDrjyD2QmpWw32GQHkwKz9FVRwNw-jymYZRwfLMqJ0ogo88PqEPCxlgjaiOjo/exec";
+        const UPDATE_URL = "https://script.google.com/macros/s/AKfycbxyYFfhDrjyD2QmpWw32GQHkwKz9FVRwNw-jymYZRwfLMqJ0ogo88PqEPCxlgjaiOjo/exec";
         
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -310,21 +663,96 @@
         const cameraStatus = document.getElementById('camera-status');
         const statusText = document.getElementById('status-text');
         const statusIcon = document.getElementById('status-icon');
+        const editBtn = document.getElementById('edit-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const editControls = document.getElementById('edit-controls');
+        const barcodeValue = document.getElementById('barcode-value');
+        const barcodeDisplay = document.getElementById('barcode-display');
+        
+        // عناصر البيانات
+        const fieldElements = {
+            "Functional Loc.": {
+                display: document.getElementById('functional-loc'),
+                input: document.getElementById('functional-loc-input')
+            },
+            "Covering Area": {
+                display: document.getElementById('covering-area'),
+                input: document.getElementById('covering-area-input')
+            },
+            "Description": {
+                display: document.getElementById('description'),
+                input: document.getElementById('description-input')
+            },
+            "Category Description": {
+                display: document.getElementById('category-desc'),
+                input: document.getElementById('category-desc-input')
+            },
+            "Last Inspection Date": {
+                display: document.getElementById('inspection-date'),
+                input: document.getElementById('inspection-date-input')
+            },
+            "Last Testing Date": {
+                display: document.getElementById('testing-date'),
+                input: document.getElementById('testing-date-input')
+            },
+            "Operating Area": {
+                display: document.getElementById('operating-area'),
+                input: document.getElementById('operating-area-input')
+            },
+            "Business Line": {
+                display: document.getElementById('business-line'),
+                input: document.getElementById('business-line-input')
+            },
+            "City": {
+                display: document.getElementById('city'),
+                input: document.getElementById('city-input')
+            },
+            "S/s": {
+                display: document.getElementById('ss'),
+                input: document.getElementById('ss-input')
+            },
+            "Serial Number": {
+                display: document.getElementById('serial-number'),
+                input: document.getElementById('serial-number-input')
+            },
+            "Object Type": {
+                display: document.getElementById('object-type'),
+                input: document.getElementById('object-type-input')
+            },
+            "Location": {
+                display: document.getElementById('location'),
+                input: document.getElementById('location-input')
+            },
+            "Owning Dept.": {
+                display: document.getElementById('owning-dept'),
+                input: document.getElementById('owning-dept-input')
+            },
+            "Business+Operating Area": {
+                display: document.getElementById('business-operating-area'),
+                input: document.getElementById('business-operating-area-input')
+            }
+        };
         
         let stream = null;
         let scanning = false;
+        let isEditing = false;
+        let currentData = {};
         
         // تحديث حالة الكاميرا
         function updateCameraStatus(message, isActive) {
-            cameraStatus.style.display = 'block';
+            cameraStatus.style.display = 'flex';
             statusText.textContent = message;
             
-            if (isActive) {
+            if (isActive === true) {
                 cameraStatus.className = 'camera-status status-active';
-                statusIcon.textContent = '📷'; // أيقونة الكاميرا نشطة
-            } else {
+                statusIcon.textContent = '📷';
+            } else if (isActive === false) {
                 cameraStatus.className = 'camera-status status-inactive';
-                statusIcon.textContent = '❌'; // أيقونة الكاميرا متوقفة
+                statusIcon.textContent = '❌';
+            } else {
+                cameraStatus.className = 'camera-status status-success';
+                statusIcon.textContent = '✅';
             }
         }
         
@@ -341,7 +769,6 @@
                 stopBtn.disabled = false;
                 scanning = true;
                 
-                // تحديث حالة الكاميرا
                 updateCameraStatus("الكاميرا قيد التشغيل - جاري البحث عن رمز QR", true);
                 
                 scanQRCode();
@@ -362,7 +789,6 @@
             stopBtn.disabled = true;
             scanning = false;
             
-            // تحديث حالة الكاميرا
             updateCameraStatus("الكاميرا متوقفة", false);
         });
         
@@ -389,10 +815,8 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
-                    // تحديث حالة الكاميرا عند العثور على الرمز
                     updateCameraStatus("تم العثور على رمز QR - جاري جلب البيانات", true);
                     
-                    // إيقاف الكاميرا بعد العثور على الرمز
                     setTimeout(() => {
                         stopBtn.click();
                         fetchData(code.data);
@@ -406,9 +830,10 @@
         // جلب البيانات من Google Sheets
         async function fetchData(barcode) {
             try {
-                loading.style.display = "block";
+                loading.style.display = "flex";
                 errorMsg.style.display = "none";
                 resultDiv.style.display = "none";
+                barcodeInput.value = "";
                 
                 const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
                 const data = await response.json();
@@ -419,32 +844,145 @@
                     throw new Error(data.message);
                 }
                 
+                // حفظ البيانات الحالية
+                currentData = data;
+                
                 // تعبئة البيانات
-                document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
-                document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
-                document.getElementById('description').textContent = data["Description"] || "-";
-                document.getElementById('category-desc').textContent = data["Category Description"] || "-";
-                document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
-                document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
-                document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
-                document.getElementById('business-line').textContent = data["Business Line"] || "-";
-                document.getElementById('city').textContent = data["City"] || "-";
-                document.getElementById('ss').textContent = data["S/s"] || "-";
-                document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
-                document.getElementById('object-type').textContent = data["Object Type"] || "-";
-                document.getElementById('location').textContent = data["Location"] || "-";
-                document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
-                document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
+                barcodeValue.value = data["Functional Loc."] || "";
+                barcodeDisplay.textContent = data["Functional Loc."] || "-";
+                
+                for (const key in fieldElements) {
+                    if (key !== "Functional Loc.") {
+                        fieldElements[key].display.textContent = data[key] || "-";
+                        fieldElements[key].input.value = data[key] || "";
+                    }
+                }
                 
                 resultDiv.style.display = "block";
-                barcodeInput.value = "";
+                updateCameraStatus("تم تحميل البيانات بنجاح", "success");
+                
+                // إخفاء واجهة التعديل
+                disableEditMode();
                 
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                updateCameraStatus("فشل في جلب البيانات", false);
             }
         }
         
+        // تفعيل وضع التعديل
+        function enableEditMode() {
+            isEditing = true;
+            
+            // إخفاء عناصر العرض وإظهار حقول الإدخال
+            for (const key in fieldElements) {
+                if (key !== "Functional Loc.") {
+                    fieldElements[key].display.style.display = "none";
+                    fieldElements[key].input.style.display = "block";
+                }
+            }
+            
+            // إظهار أزرار الحفظ والإلغاء
+            editControls.style.display = "flex";
+            editBtn.style.display = "none";
+        }
+        
+        // تعطيل وضع التعديل
+        function disableEditMode() {
+            isEditing = false;
+            
+            // إظهار عناصر العرض وإخفاء حقول الإدخال
+            for (const key in fieldElements) {
+                if (key !== "Functional Loc.") {
+                    fieldElements[key].display.style.display = "block";
+                    fieldElements[key].input.style.display = "none";
+                }
+            }
+            
+            // إخفاء أزرار الحفظ والإلغاء
+            editControls.style.display = "none";
+            editBtn.style.display = "block";
+        }
+        
+        // حدث زر التعديل
+        editBtn.addEventListener('click', enableEditMode);
+        
+        // حدث زر الإلغاء
+        cancelBtn.addEventListener('click', () => {
+            // استعادة القيم الأصلية
+            for (const key in fieldElements) {
+                if (key !== "Functional Loc.") {
+                    fieldElements[key].input.value = currentData[key] || "";
+                }
+            }
+            
+            disableEditMode();
+        });
+        
+        // حدث زر الحفظ
+        saveBtn.addEventListener('click', async () => {
+            try {
+                loading.style.display = "flex";
+                errorMsg.style.display = "none";
+                
+                // تجهيز البيانات للتحديث
+                const updatedData = {
+                    barcode: barcodeValue.value,
+                    "Functional Loc.": currentData["Functional Loc."],
+                    "Covering Area": fieldElements["Covering Area"].input.value,
+                    "Description": fieldElements["Description"].input.value,
+                    "Category Description": fieldElements["Category Description"].input.value,
+                    "Last Inspection Date": fieldElements["Last Inspection Date"].input.value,
+                    "Last Testing Date": fieldElements["Last Testing Date"].input.value,
+                    "Operating Area": fieldElements["Operating Area"].input.value,
+                    "Business Line": fieldElements["Business Line"].input.value,
+                    "City": fieldElements["City"].input.value,
+                    "S/s": fieldElements["S/s"].input.value,
+                    "Serial Number": fieldElements["Serial Number"].input.value,
+                    "Object Type": fieldElements["Object Type"].input.value,
+                    "Location": fieldElements["Location"].input.value,
+                    "Owning Dept.": fieldElements["Owning Dept."].input.value,
+                    "Business+Operating Area": fieldElements["Business+Operating Area"].input.value
+                };
+                
+                // إرسال البيانات للتحديث
+                const response = await fetch(UPDATE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                
+                const result = await response.json();
+                
+                loading.style.display = "none";
+                
+                if (result.status === "success") {
+                    // تحديث عرض البيانات
+                    for (const key in fieldElements) {
+                        if (key !== "Functional Loc.") {
+                            fieldElements[key].display.textContent = updatedData[key] || "-";
+                        }
+                    }
+                    
+                    // تحديث البيانات الحالية
+                    currentData = updatedData;
+                    
+                    disableEditMode();
+                    updateCameraStatus("تم تحديث البيانات بنجاح", "success");
+                } else {
+                    throw new Error(result.message || "حدث خطأ أثناء تحديث البيانات");
+                }
+                
+            } catch (error) {
+                loading.style.display = "none";
+                showError(error.message || "حدث خطأ أثناء تحديث البيانات");
+            }
+        });
+        
+        // إظهار رسالة الخطأ
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
