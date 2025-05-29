@@ -109,13 +109,12 @@
         .field-value {
             font-size: 16px;
         }
-        .edit-field {
+        .editable {
             width: 100%;
             padding: 8px;
+            margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            margin-top: 5px;
-            display: none;
         }
         #loading {
             display: none;
@@ -155,106 +154,73 @@
         <div id="error-message"></div>
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
-            <form id="edit-form">
-                <input type="hidden" id="row-number" name="rowNumber">
-
-                <div class="product-field">
-                    <span class="field-label">الموقع الوظيفي:</span>
-                    <span class="field-value" id="functional-loc">-</span>
-                    <input type="text" class="edit-field" data-field="Functional Loc." id="functional-loc-input" name="Functional Loc." readonly>
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">منطقة التغطية:</span>
-                    <span class="field-value" id="covering-area">-</span>
-                    <input type="text" class="edit-field" data-field="Covering Area" id="covering-area-input" name="Covering Area">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">الوصف:</span>
-                    <span class="field-value" id="description">-</span>
-                    <input type="text" class="edit-field" data-field="Description" id="description-input" name="Description">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">وصف الفئة:</span>
-                    <span class="field-value" id="category-desc">-</span>
-                    <input type="text" class="edit-field" data-field="Category Description" id="category-desc-input" name="Category Description">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">تاريخ آخر تفتيش:</span>
-                    <span class="field-value" id="inspection-date">-</span>
-                    <input type="text" class="edit-field" data-field="Last Inspection Date" id="inspection-date-input" name="Last Inspection Date">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">تاريخ آخر اختبار:</span>
-                    <span class="field-value" id="testing-date">-</span>
-                    <input type="text" class="edit-field" data-field="Last Testing Date" id="testing-date-input" name="Last Testing Date">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">منطقة التشغيل:</span>
-                    <span class="field-value" id="operating-area">-</span>
-                    <input type="text" class="edit-field" data-field="Operating Area" id="operating-area-input" name="Operating Area">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">خط الأعمال:</span>
-                    <span class="field-value" id="business-line">-</span>
-                    <input type="text" class="edit-field" data-field="Business Line" id="business-line-input" name="Business Line">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">المدينة:</span>
-                    <span class="field-value" id="city">-</span>
-                    <input type="text" class="edit-field" data-field="City" id="city-input" name="City">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">S/s:</span>
-                    <span class="field-value" id="ss">-</span>
-                    <input type="text" class="edit-field" data-field="S/s" id="ss-input" name="S/s">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">الرقم التسلسلي:</span>
-                    <span class="field-value" id="serial-number">-</span>
-                    <input type="text" class="edit-field" data-field="Serial Number" id="serial-number-input" name="Serial Number">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">نوع الكائن:</span>
-                    <span class="field-value" id="object-type">-</span>
-                    <input type="text" class="edit-field" data-field="Object Type" id="object-type-input" name="Object Type">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">الموقع:</span>
-                    <span class="field-value" id="location">-</span>
-                    <input type="text" class="edit-field" data-field="Location" id="location-input" name="Location">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">القسم المالك:</span>
-                    <span class="field-value" id="owning-dept">-</span>
-                    <input type="text" class="edit-field" data-field="Owning Dept." id="owning-dept-input" name="Owning Dept.">
-                </div>
-
-                <div class="product-field">
-                    <span class="field-label">منطقة الأعمال+التشغيل:</span>
-                    <span class="field-value" id="business-operating-area">-</span>
-                    <input type="text" class="edit-field" data-field="Business+Operating Area" id="business-operating-area-input" name="Business+Operating Area">
-                </div>
-
-                <button type="submit" id="save-btn">حفظ التغييرات</button>
-            </form>
+            <input type="hidden" id="barcode-hidden">
+            <div class="product-field">
+                <span class="field-label">الموقع الوظيفي:</span>
+                <input class="editable" id="functional-loc">
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة التغطية:</span>
+                <input class="editable" id="covering-area">
+            </div>
+            <div class="product-field">
+                <span class="field-label">الوصف:</span>
+                <input class="editable" id="description">
+            </div>
+            <div class="product-field">
+                <span class="field-label">وصف الفئة:</span>
+                <input class="editable" id="category-desc">
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر تفتيش:</span>
+                <input class="editable" id="inspection-date">
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر اختبار:</span>
+                <input class="editable" id="testing-date">
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة التشغيل:</span>
+                <input class="editable" id="operating-area">
+            </div>
+            <div class="product-field">
+                <span class="field-label">خط الأعمال:</span>
+                <input class="editable" id="business-line">
+            </div>
+            <div class="product-field">
+                <span class="field-label">المدينة:</span>
+                <input class="editable" id="city">
+            </div>
+            <div class="product-field">
+                <span class="field-label">S/s:</span>
+                <input class="editable" id="ss">
+            </div>
+            <div class="product-field">
+                <span class="field-label">الرقم التسلسلي:</span>
+                <input class="editable" id="serial-number">
+            </div>
+            <div class="product-field">
+                <span class="field-label">نوع الكائن:</span>
+                <input class="editable" id="object-type">
+            </div>
+            <div class="product-field">
+                <span class="field-label">الموقع:</span>
+                <input class="editable" id="location">
+            </div>
+            <div class="product-field">
+                <span class="field-label">القسم المالك:</span>
+                <input class="editable" id="owning-dept">
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة الأعمال+التشغيل:</span>
+                <input class="editable" id="business-operating-area">
+            </div>
+            <button onclick="saveData()">حفظ التعديلات</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby_IA9sqRLt8d5C8ssHn1CczCncF_3-6AOGTmyQUBWELWcYnbWrFGfDAU8YsNWQqkgM/exec ";
+        const API_URL = "https://script.google.com/macros/s/AKfycbygMBQQVkip-B3DIwD6pcdiZWoc6oMHPaKwlC8itg_xeoc-fLu8w-UTUBoUDBawmWEj/exec ";
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -337,30 +303,25 @@
                 if (data.status === "error") {
                     throw new Error(data.message);
                 }
-
-                document.getElementById('row-number').value = data.rowNumber;
-
-                const fields = [
-                    'functional-loc', 'covering-area', 'description', 'category-desc',
-                    'inspection-date', 'testing-date', 'operating-area', 'business-line',
-                    'city', 'ss', 'serial-number', 'object-type', 'location', 'owning-dept', 'business-operating-area'
-                ];
-
-                fields.forEach(field => {
-                    const displayEl = document.getElementById(field);
-                    const inputEl = document.getElementById(`${field}-input`);
-                    
-                    displayEl.textContent = data[field.replace(/-/g, ' ')] || "-";
-                    inputEl.value = data[field.replace(/-/g, ' ')] || "";
-                });
-
+                // تعبئة البيانات
+                document.getElementById('barcode-hidden').value = barcode;
+                document.getElementById('functional-loc').value = data["Functional Loc."] || "";
+                document.getElementById('covering-area').value = data["Covering Area"] || "";
+                document.getElementById('description').value = data["Description"] || "";
+                document.getElementById('category-desc').value = data["Category Description"] || "";
+                document.getElementById('inspection-date').value = data["Last Inspection Date"] || "";
+                document.getElementById('testing-date').value = data["Last Testing Date"] || "";
+                document.getElementById('operating-area').value = data["Operating Area"] || "";
+                document.getElementById('business-line').value = data["Business Line"] || "";
+                document.getElementById('city').value = data["City"] || "";
+                document.getElementById('ss').value = data["S/s"] || "";
+                document.getElementById('serial-number').value = data["Serial Number"] || "";
+                document.getElementById('object-type').value = data["Object Type"] || "";
+                document.getElementById('location').value = data["Location"] || "";
+                document.getElementById('owning-dept').value = data["Owning Dept."] || "";
+                document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
-
-                // إظهار الحقول للتعديل
-                document.querySelectorAll('.field-value').forEach(el => el.style.display = 'none');
-                document.querySelectorAll('.edit-field').forEach(el => el.style.display = 'block');
-
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
@@ -368,42 +329,48 @@
         }
 
         // حفظ التعديلات
-        document.getElementById('edit-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
+        async function saveData() {
+            const barcode = document.getElementById('barcode-hidden').value;
+            const data = {
+                barcode,
+                "Functional Loc.": document.getElementById('functional-loc').value,
+                "Covering Area": document.getElementById('covering-area').value,
+                "Description": document.getElementById('description').value,
+                "Category Description": document.getElementById('category-desc').value,
+                "Last Inspection Date": document.getElementById('inspection-date').value,
+                "Last Testing Date": document.getElementById('testing-date').value,
+                "Operating Area": document.getElementById('operating-area').value,
+                "Business Line": document.getElementById('business-line').value,
+                "City": document.getElementById('city').value,
+                "S/s": document.getElementById('ss').value,
+                "Serial Number": document.getElementById('serial-number').value,
+                "Object Type": document.getElementById('object-type').value,
+                "Location": document.getElementById('location').value,
+                "Owning Dept.": document.getElementById('owning-dept').value,
+                "Business+Operating Area": document.getElementById('business-operating-area').value
+            };
             try {
-                const formData = new FormData(this);
-                const updatedData = {};
-                
-                for (const [key, value] of formData.entries()) {
-                    updatedData[key] = value;
-                }
-                
-                updatedData.rowNumber = document.getElementById('row-number').value;
-
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
-
                 const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
                 });
-                
                 const result = await response.json();
                 loading.style.display = "none";
-                
-                if (result.status === 'success') {
-                    alert('تم حفظ التغييرات بنجاح');
-                    fetchData(updatedData['Functional Loc.']); // إعادة تحميل البيانات
+                if (result.status === "success") {
+                    alert("تم حفظ التعديلات بنجاح");
                 } else {
-                    throw new Error(result.message || 'فشل في حفظ التغييرات');
+                    throw new Error(result.message);
                 }
             } catch (error) {
                 loading.style.display = "none";
-                showError(error.message || "حدث خطأ أثناء حفظ التغييرات");
+                showError(error.message || "فشل في حفظ التعديلات");
             }
-        });
+        }
 
         function showError(message) {
             errorMsg.textContent = message;
