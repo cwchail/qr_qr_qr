@@ -135,11 +135,11 @@
         }
 
         .led.on {
-            background-color: #4CAF50; /* لون أخضر عند تشغيل الكاميرا */
+            background-color: #4CAF50;
         }
 
         .led.off {
-            background-color: #9E9E9E; /* رمادي عند الإيقاف */
+            background-color: #9E9E9E;
         }
 
         .camera-status {
@@ -316,7 +316,9 @@
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 if (code) {
-                    stopBtn.click();
+                    console.log("QR Code تم قراءته: ", code.data); // لمتابعة البيانات المقروءة
+                    scanning = false;
+                    video.pause(); // إيقاف اللوحة فقط
                     fetchData(code.data);
                 }
             }
