@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -12,6 +13,7 @@
             padding: 20px;
             background: #f5f5f5;
             text-align: center;
+            direction: rtl;
         }
         .container {
             max-width: 800px;
@@ -25,10 +27,12 @@
             border: 2px solid #333;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         #video {
             width: 100%;
             display: block;
+            background: #000;
         }
         #canvas {
             display: none;
@@ -70,10 +74,19 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #3367D6;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         #manual-input {
             margin: 20px 0;
@@ -84,6 +97,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
         }
         #result {
             background: white;
@@ -91,7 +105,7 @@
             margin: 20px auto;
             max-width: 600px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: right;
             display: none;
         }
@@ -123,11 +137,71 @@
             background: rgba(234,67,53,0.1);
             display: none;
         }
+        .camera-status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+        .status-active {
+            background-color: rgba(66, 133, 244, 0.2);
+            color: #4285F4;
+            border: 1px solid #4285F4;
+        }
+        .status-inactive {
+            background-color: rgba(234, 67, 53, 0.2);
+            color: #EA4335;
+            border: 1px solid #EA4335;
+        }
+        .status-icon {
+            margin-left: 8px;
+            font-size: 18px;
+        }
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: right;
+            border-right: 4px solid #4285F4;
+        }
+        .instructions h3 {
+            color: #4285F4;
+            margin-top: 0;
+        }
+        .instructions ul {
+            padding-right: 20px;
+            margin-bottom: 0;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .company-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4285F4;
+            margin-bottom: 10px;
+        }
+        .company-logo span {
+            color: #EA4335;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        <div class="company-logo">شركة <span>جيزة</span> العربية للأنظمة</div>
+        <h1>نظام مسح QR Code</h1>
+        
+        <div class="instructions">
+            <h3>تعليمات الاستخدام:</h3>
+            <ul>
+                <li>اضغط على زر "بدء المسح" لتشغيل الكاميرا</li>
+                <li>وجّه الكاميرا نحو رمز QR حتى يتم مسحه</li>
+                <li>ستتوقف الكاميرا تلقائيًا عند نجاح عملية المسح</li>
+                <li>يمكنك إدخال الرمز يدويًا في حالة عدم نجاح المسح</li>
+            </ul>
+        </div>
         
         <div id="scanner-container">
             <video id="video" playsinline></video>
@@ -135,6 +209,11 @@
             <div class="scanner-overlay">
                 <div class="scanner-line"></div>
             </div>
+        </div>
+        
+        <div id="camera-status" class="camera-status">
+            <span id="status-icon" class="status-icon">📷</span>
+            <span id="status-text">حالة الكاميرا</span>
         </div>
         
         <div class="controls">
@@ -228,9 +307,26 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+        const cameraStatus = document.getElementById('camera-status');
+        const statusText = document.getElementById('status-text');
+        const statusIcon = document.getElementById('status-icon');
         
         let stream = null;
         let scanning = false;
+        
+        // تحديث حالة الكاميرا
+        function updateCameraStatus(message, isActive) {
+            cameraStatus.style.display = 'block';
+            statusText.textContent = message;
+            
+            if (isActive) {
+                cameraStatus.className = 'camera-status status-active';
+                statusIcon.textContent = '📷'; // أيقونة الكاميرا نشطة
+            } else {
+                cameraStatus.className = 'camera-status status-inactive';
+                statusIcon.textContent = '❌'; // أيقونة الكاميرا متوقفة
+            }
+        }
         
         // بدء المسح
         startBtn.addEventListener('click', async () => {
@@ -245,9 +341,13 @@
                 stopBtn.disabled = false;
                 scanning = true;
                 
+                // تحديث حالة الكاميرا
+                updateCameraStatus("الكاميرا قيد التشغيل - جاري البحث عن رمز QR", true);
+                
                 scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
+                updateCameraStatus("فشل في تشغيل الكاميرا", false);
             }
         });
         
@@ -261,6 +361,9 @@
             startBtn.disabled = false;
             stopBtn.disabled = true;
             scanning = false;
+            
+            // تحديث حالة الكاميرا
+            updateCameraStatus("الكاميرا متوقفة", false);
         });
         
         // البحث يدوياً
@@ -286,8 +389,14 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
-                    stopBtn.click();
-                    fetchData(code.data);
+                    // تحديث حالة الكاميرا عند العثور على الرمز
+                    updateCameraStatus("تم العثور على رمز QR - جاري جلب البيانات", true);
+                    
+                    // إيقاف الكاميرا بعد العثور على الرمز
+                    setTimeout(() => {
+                        stopBtn.click();
+                        fetchData(code.data);
+                    }, 500);
                 }
             }
             
@@ -340,6 +449,9 @@
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
+        
+        // تحديث حالة الكاميرا عند التحميل
+        updateCameraStatus("الكاميرا متوقفة - اضغط على بدء المسح لتفعيلها", false);
     </script>
 </body>
 </html>
