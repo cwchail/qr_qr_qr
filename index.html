@@ -556,7 +556,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzjELtX8iFTY33I5BQGypbyPnL4h4gbZIqhHTbzn3pFB5S_R_2PFx68M8RRxlKrAYBx/exec";
+        // استبدل هذا الرابط برابط نشر Google Apps Script الخاص بك
+        const API_URL = "https://script.google.com/macros/s/AKfycbzRfTVuXHKdaoSAzDYxXRzbyK9VUym1G3zs0bsrMQ9hulJxmkJKsLSXt_NgZKvwxloe/exec";
         
         // عناصر DOM
         const video = document.getElementById('video');
@@ -701,7 +702,9 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
                 
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`, {
+                // إضافة معامل عشوائي لمنع التخزين المؤقت
+                const cacheBuster = `&t=${Date.now()}`;
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}${cacheBuster}`, {
                     signal: controller.signal
                 });
                 
@@ -725,7 +728,21 @@
                 currentBarcode = barcode;
                 
                 // تعبئة البيانات في حقول الإدخال
-                fillDataFields(data);
+                document.getElementById('functional-loc').value = data["Functional Loc."] || "-";
+                document.getElementById('covering-area').value = data["Covering Area"] || "-";
+                document.getElementById('description').value = data["Description"] || "-";
+                document.getElementById('category-desc').value = data["Category Description"] || "-";
+                document.getElementById('inspection-date').value = data["Last Inspection Date"] || "-";
+                document.getElementById('testing-date').value = data["Last Testing Date"] || "-";
+                document.getElementById('operating-area').value = data["Operating Area"] || "-";
+                document.getElementById('business-line').value = data["Business Line"] || "-";
+                document.getElementById('city').value = data["City"] || "-";
+                document.getElementById('ss').value = data["S/s"] || "-";
+                document.getElementById('serial-number').value = data["Serial Number"] || "-";
+                document.getElementById('object-type').value = data["Object Type"] || "-";
+                document.getElementById('location').value = data["Location"] || "-";
+                document.getElementById('owning-dept').value = data["Owning Dept."] || "-";
+                document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "-";
                 
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
@@ -747,25 +764,6 @@
                     showError(error.message || "حدث خطأ أثناء جلب البيانات");
                 }
             }
-        }
-        
-        // تعبئة حقول البيانات
-        function fillDataFields(data) {
-            document.getElementById('functional-loc').value = data["Functional Loc."] || "-";
-            document.getElementById('covering-area').value = data["Covering Area"] || "-";
-            document.getElementById('description').value = data["Description"] || "-";
-            document.getElementById('category-desc').value = data["Category Description"] || "-";
-            document.getElementById('inspection-date').value = data["Last Inspection Date"] || "-";
-            document.getElementById('testing-date').value = data["Last Testing Date"] || "-";
-            document.getElementById('operating-area').value = data["Operating Area"] || "-";
-            document.getElementById('business-line').value = data["Business Line"] || "-";
-            document.getElementById('city').value = data["City"] || "-";
-            document.getElementById('ss').value = data["S/s"] || "-";
-            document.getElementById('serial-number').value = data["Serial Number"] || "-";
-            document.getElementById('object-type').value = data["Object Type"] || "-";
-            document.getElementById('location').value = data["Location"] || "-";
-            document.getElementById('owning-dept').value = data["Owning Dept."] || "-";
-            document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "-";
         }
         
         // بدء مؤشر التقدم
@@ -827,13 +825,14 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 ثانية
                 
-                // إرسال البيانات للتحديث
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dataToSave),
+                // إرسال البيانات للتحديث باستخدام GET
+                const updatesQuery = Object.entries(dataToSave.updates)
+                    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                    .join('&');
+                
+                const url = `${API_URL}?action=update&barcode=${encodeURIComponent(dataToSave.barcode)}&${updatesQuery}`;
+                
+                const response = await fetch(url, {
                     signal: controller.signal
                 });
                 
