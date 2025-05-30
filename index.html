@@ -503,7 +503,7 @@
             <div class="result-grid">
                 <div class="product-field">
                     <span class="field-label"><i class="fas fa-map-marker-alt"></i> الموقع الوظيفي:</span>
-                    <input type="text" class="field-value" id="functional_loc">
+                    <input type="text" class="field-value" id="functional_loc" readonly>
                 </div>
                 <div class="product-field">
                     <span class="field-label"><i class="fas fa-map"></i> منطقة التغطية:</span>
@@ -623,9 +623,22 @@
                     return;
                 }
                 
+                // توفير بدائل في حالة عدم توفر الكاميرا
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showError("المتصفح لا يدعم الوصول إلى الكاميرا. الرجاء استخدام الإدخال اليدوي.");
+                    return;
+                }
+                
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "environment" }
+                }).catch(err => {
+                    console.error("Camera access error:", err);
+                    showError("تعذر الوصول إلى الكاميرا. الرجاء التأكد من الصلاحيات أو استخدام الإدخال اليدوي.");
+                    return;
                 });
+                
+                if (!stream) return;
+                
                 video.srcObject = stream;
                 video.play();
                 
@@ -639,6 +652,7 @@
                 
                 scanQRCode();
             } catch (err) {
+                console.error("Camera error:", err);
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
             }
         });
