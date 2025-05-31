@@ -254,8 +254,10 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw430VvH9lKORKNVGK2z7j3F-2vog-P_yow47-PNnzUnFyvI2rndSxfENBI_ORgWQW_/exec";
+        // رابط API الخاص بـ Google Apps Script
+        const API_URL = "https://script.google.com/macros/s/AKfycbzq0vVOcJXa1lYhst6RWI5o1SKsCEMWfM0LLMUMgh6Tu-HAnOwaDj4xNG9lF46jjAeD/exec";
         
+        // عناصر DOM
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -271,36 +273,47 @@
         const saveBtn = document.getElementById('save-btn');
         const cancelBtn = document.getElementById('cancel-btn');
         
+        // متغيرات الحالة
         let stream = null;
         let scanning = false;
         let currentBarcode = "";
         let originalData = {};
         
+        // ============== أحداث الأزرار ==============
+        
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
+                // طلب إذن الوصول إلى الكاميرا
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "environment" }
                 });
-                video.srcObject = stream;
-                video.play();
                 
+                video.srcObject = stream;
+                await video.play();
+                
+                // تحديث حالة الأزرار
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 scanning = true;
                 
+                // بدء عملية المسح
                 scanQRCode();
+                
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
+                console.error("Camera error:", err);
             }
         });
         
         // إيقاف المسح
         stopBtn.addEventListener('click', () => {
+            // إيقاف تدفق الكاميرا
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
+            
             video.srcObject = null;
             startBtn.disabled = false;
             stopBtn.disabled = true;
@@ -317,38 +330,56 @@
             }
         });
         
+        // ============== وظائف المسح ==============
+        
         // مسح QR Code
         function scanQRCode() {
             if (!scanning) return;
             
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                // ضبط أبعاد Canvas لتتناسب مع الفيديو
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
+                
+                // رسم إطار الفيديو على Canvas
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
+                // تحليل الصورة للعثور على QR Code
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
+                    // إذا تم العثور على كود، توقف عن المسح واحصل على البيانات
                     stopBtn.click();
                     fetchData(code.data);
                 }
             }
             
+            // استمرار المسح
             requestAnimationFrame(scanQRCode);
         }
+        
+        // ============== إدارة البيانات ==============
         
         // جلب البيانات من Google Sheets
         async function fetchData(barcode) {
             try {
+                // إظهار حالة التحميل وإخفاء الرسائل
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
                 successMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 
+                // جلب البيانات من API
                 const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+                
+                if (!response.ok) {
+                    throw new Error("فشل في جلب البيانات من الخادم");
+                }
+                
                 const data = await response.json();
                 
+                // إخفاء حالة التحميل
                 loading.style.display = "none";
                 
                 if (data.status === "error") {
@@ -375,7 +406,7 @@
                     "Business+Operating Area": data["Business+Operating Area"] || ""
                 };
                 
-                // تعبئة البيانات
+                // تعبئة البيانات في النموذج
                 document.getElementById('functional-loc').value = originalData["Functional Loc."];
                 document.getElementById('covering-area').value = originalData["Covering Area"];
                 document.getElementById('description').value = originalData["Description"];
@@ -392,7 +423,7 @@
                 document.getElementById('owning-dept').value = originalData["Owning Dept."];
                 document.getElementById('business-operating-area').value = originalData["Business+Operating Area"];
                 
-                // إعادة تعطيل الحقول وإخفاء أزرار الحفظ والإلغاء
+                // إعادة تعطيل الحقول وإظهار النتيجة
                 disableEditing();
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
@@ -400,8 +431,11 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                console.error("Fetch error:", error);
             }
         }
+        
+        // ============== وظائف التعديل ==============
         
         // تمكين التعديل
         editBtn.addEventListener('click', () => {
@@ -415,6 +449,7 @@
                 errorMsg.style.display = "none";
                 successMsg.style.display = "none";
                 
+                // تجميع البيانات المحدثة
                 const updatedData = {
                     barcode: currentBarcode,
                     "Functional Loc.": document.getElementById('functional-loc').value,
@@ -434,6 +469,7 @@
                     "Business+Operating Area": document.getElementById('business-operating-area').value
                 };
                 
+                // إرسال البيانات المحدثة إلى الخادم
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
@@ -441,6 +477,10 @@
                     },
                     body: JSON.stringify(updatedData)
                 });
+                
+                if (!response.ok) {
+                    throw new Error("فشل في حفظ التعديلات");
+                }
                 
                 const result = await response.json();
                 
@@ -450,10 +490,10 @@
                     throw new Error(result.message);
                 }
                 
+                // إظهار رسالة النجاح وتحديث البيانات الأصلية
                 showSuccess("تم حفظ التعديلات بنجاح");
                 disableEditing();
                 
-                // تحديث البيانات الأصلية
                 originalData = {
                     "Functional Loc.": updatedData["Functional Loc."],
                     "Covering Area": updatedData["Covering Area"],
@@ -475,6 +515,7 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء حفظ التعديلات");
+                console.error("Save error:", error);
             }
         });
         
@@ -500,6 +541,8 @@
             disableEditing();
         });
         
+        // ============== وظائف المساعدة ==============
+        
         // تمكين التعديل على الحقول
         function enableEditing() {
             const inputs = document.querySelectorAll('.field-value');
@@ -507,6 +550,8 @@
                 // السماح بتعديل جميع الحقول ما عدا حقل الباركود (الموقع الوظيفي)
                 if (input.id !== 'functional-loc') {
                     input.disabled = false;
+                    input.style.backgroundColor = "#fff";
+                    input.style.borderColor = "#4285F4";
                 }
             });
             
@@ -520,6 +565,8 @@
             const inputs = document.querySelectorAll('.field-value');
             inputs.forEach(input => {
                 input.disabled = true;
+                input.style.backgroundColor = "#f9f9f9";
+                input.style.borderColor = "#eee";
             });
             
             editBtn.style.display = "inline-block";
@@ -527,14 +574,22 @@
             cancelBtn.style.display = "none";
         }
         
+        // عرض رسالة الخطأ
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
+            setTimeout(() => {
+                errorMsg.style.display = "none";
+            }, 5000);
         }
         
+        // عرض رسالة النجاح
         function showSuccess(message) {
             successMsg.textContent = message;
             successMsg.style.display = "block";
+            setTimeout(() => {
+                successMsg.style.display = "none";
+            }, 5000);
         }
     </script>
 </body>
