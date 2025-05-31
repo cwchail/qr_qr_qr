@@ -261,7 +261,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyJwDk4tacMqgZbMW5wAdYAWbhDD_zn11skKF6TBAPYZwskSujkvoWTmjh-_gUnO1-z/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyFfHrpoFCj6q140X6QulMwo_L_QG7_H4wDLy4mMEijWSPjwWj3HjTFUCJ0f6COnVaw/exec";
         
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -424,18 +424,18 @@
             saveBtn.style.display = 'inline-block';
         });
         
-        // حفظ التعديلات
+        // حفظ التعديلات - النسخة المعدلة
         saveBtn.addEventListener('click', async () => {
             try {
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
                 successMsg.style.display = "none";
                 
-                // جمع البيانات المعدلة
+                // جمع البيانات المعدلة مع استخدام أسماء متغيرات بسيطة
                 const updatedData = {
                     action: "update",
                     barcode: currentBarcode,
-                    rowIndex: rowIndexInput.value,
+                    row: rowIndexInput.value,
                     coveringArea: document.getElementById('covering-area-edit').value,
                     description: document.getElementById('description-edit').value,
                     categoryDesc: document.getElementById('category-desc-edit').value,
@@ -451,26 +451,30 @@
                     owningDept: document.getElementById('owning-dept-edit').value,
                     businessOperatingArea: document.getElementById('business-operating-area-edit').value
                 };
-                
-                // إرسال البيانات للتحديث
-                const response = await fetch(API_URL, {
-                    method: 'POST',
+
+                // إنشاء query string
+                const queryParams = new URLSearchParams();
+                for (const key in updatedData) {
+                    queryParams.append(key, updatedData[key]);
+                }
+
+                const response = await fetch(`${API_URL}?${queryParams.toString()}`, {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updatedData)
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('فشل في إرسال البيانات إلى السيرفر');
                 }
-                
+
                 const result = await response.json();
                 
                 if (result.status === "error") {
                     throw new Error(result.message);
                 }
-                
+
                 // إظهار رسالة النجاح
                 showSuccess("تم حفظ التعديلات بنجاح");
                 
