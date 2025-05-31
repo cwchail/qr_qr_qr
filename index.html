@@ -140,6 +140,14 @@
             background: #FBBC05;
             margin-top: 20px;
         }
+        #success-message {
+            color: #34A853;
+            margin: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(52,168,83,0.1);
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -166,6 +174,7 @@
         
         <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
+        <div id="success-message"></div>
         
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
@@ -252,7 +261,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyQ_hpWw1J3BfDpVAkXZsRKgu1A4fgIYk6eK9ut7Ef913WG3x5AWNtHBRfhFO7TK-AX/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbw4kzNABooz7OhKH4N-aAR1o91bUG7CdFyE4xQXoZbKx0PONXurRTFcYl02TxjE2Pdg/exec";
         
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -263,6 +272,7 @@
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
+        const successMsg = document.getElementById('success-message');
         const resultDiv = document.getElementById('result');
         const editBtn = document.getElementById('edit-btn');
         const saveBtn = document.getElementById('save-btn');
@@ -339,10 +349,15 @@
             try {
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
+                successMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 saveBtn.style.display = "none";
                 
                 const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+                if (!response.ok) {
+                    throw new Error('فشل في جلب البيانات من السيرفر');
+                }
+                
                 const data = await response.json();
                 
                 loading.style.display = "none";
@@ -414,9 +429,11 @@
             try {
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
+                successMsg.style.display = "none";
                 
                 // جمع البيانات المعدلة
                 const updatedData = {
+                    action: "update",
                     barcode: currentBarcode,
                     rowIndex: rowIndexInput.value,
                     "Covering Area": document.getElementById('covering-area-edit').value,
@@ -439,10 +456,14 @@
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: JSON.stringify(updatedData)
+                    body: `data=${encodeURIComponent(JSON.stringify(updatedData))}`
                 });
+                
+                if (!response.ok) {
+                    throw new Error('فشل في إرسال البيانات إلى السيرفر');
+                }
                 
                 const result = await response.json();
                 
@@ -450,8 +471,13 @@
                     throw new Error(result.message);
                 }
                 
+                // إظهار رسالة النجاح
+                showSuccess("تم حفظ التعديلات بنجاح");
+                
                 // إعادة تحميل البيانات بعد الحفظ
-                fetchData(currentBarcode);
+                setTimeout(() => {
+                    fetchData(currentBarcode);
+                }, 1500);
                 
             } catch (error) {
                 loading.style.display = "none";
@@ -462,6 +488,12 @@
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
+        }
+        
+        function showSuccess(message) {
+            successMsg.textContent = message;
+            successMsg.style.display = "block";
+            loading.style.display = "none";
         }
     </script>
 </body>
