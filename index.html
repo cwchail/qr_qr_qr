@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مسح QR Code</title>
+    <title>نظام مسح QR Code - مع تعديل البيانات</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <style>
         body {
@@ -109,10 +109,10 @@
         .field-value {
             font-size: 16px;
         }
-        .editable {
-            border: 1px solid #ccc;
-            padding: 5px;
+        input.field-input {
             width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
             box-sizing: border-box;
         }
         #save-btn {
@@ -158,71 +158,72 @@
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
-                <input class="field-value editable" id="functional-loc">
+                <input class="field-input" id="functional-loc">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التغطية:</span>
-                <input class="field-value editable" id="covering-area">
+                <input class="field-input" id="covering-area">
             </div>
             <div class="product-field">
                 <span class="field-label">الوصف:</span>
-                <input class="field-value editable" id="description">
+                <input class="field-input" id="description">
             </div>
             <div class="product-field">
                 <span class="field-label">وصف الفئة:</span>
-                <input class="field-value editable" id="category-desc">
+                <input class="field-input" id="category-desc">
             </div>
             <div class="product-field">
                 <span class="field-label">تاريخ آخر تفتيش:</span>
-                <input class="field-value editable" id="inspection-date">
+                <input class="field-input" id="inspection-date">
             </div>
             <div class="product-field">
                 <span class="field-label">تاريخ آخر اختبار:</span>
-                <input class="field-value editable" id="testing-date">
+                <input class="field-input" id="testing-date">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التشغيل:</span>
-                <input class="field-value editable" id="operating-area">
+                <input class="field-input" id="operating-area">
             </div>
             <div class="product-field">
                 <span class="field-label">خط الأعمال:</span>
-                <input class="field-value editable" id="business-line">
+                <input class="field-input" id="business-line">
             </div>
             <div class="product-field">
                 <span class="field-label">المدينة:</span>
-                <input class="field-value editable" id="city">
+                <input class="field-input" id="city">
             </div>
             <div class="product-field">
                 <span class="field-label">S/s:</span>
-                <input class="field-value editable" id="ss">
+                <input class="field-input" id="ss">
             </div>
             <div class="product-field">
                 <span class="field-label">الرقم التسلسلي:</span>
-                <input class="field-value editable" id="serial-number">
+                <input class="field-input" id="serial-number">
             </div>
             <div class="product-field">
                 <span class="field-label">نوع الكائن:</span>
-                <input class="field-value editable" id="object-type">
+                <input class="field-input" id="object-type">
             </div>
             <div class="product-field">
                 <span class="field-label">الموقع:</span>
-                <input class="field-value editable" id="location">
+                <input class="field-input" id="location">
             </div>
             <div class="product-field">
                 <span class="field-label">القسم المالك:</span>
-                <input class="field-value editable" id="owning-dept">
+                <input class="field-input" id="owning-dept">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة الأعمال+التشغيل:</span>
-                <input class="field-value editable" id="business-operating-area">
+                <input class="field-input" id="business-operating-area">
             </div>
             <button id="save-btn">حفظ التعديلات</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzJ901EC6lzOeJF2_w4RupcEa4Ov-2dg_Vy2RtXnULtIyWx7VYGv3O6BzEy_2HLvagr/exec ";
-        const SAVE_URL = "https://script.google.com/macros/s/AKfycbxMlSKk4f0ELlIpMx5PIvhsywIMXx8UCB-2o1oOie8ZHLdAlS2m4uX9TNCtcm7pq3Cp/exec"; // يجب استبداله بالرابط الجديد بعد نشر الدالة saveData
+        const API_URL = "https://script.google.com/macros/s/AKfycbwaZoha9lfY3WOjWIvXXMMVnCdm2FIqAViL_IPBQ-CWROI57tPeGVnGMk2iZpHSnj-0/exec ";
+        const SAVE_URL = "https://script.google.com/macros/s/AKfycbzRzghNz124Z1yUMtVnlH2BZzNpIRcfe-PN65ZV11BQ49E08L5wDJeT1DluMXO4s1lH/exec ";
+
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -234,21 +235,19 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+
         let currentBarcode = null;
-        let stream = null;
-        let scanning = false;
 
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
+                const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "environment" }
                 });
                 video.srcObject = stream;
                 video.play();
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
-                scanning = true;
                 scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
@@ -257,17 +256,15 @@
 
         // إيقاف المسح
         stopBtn.addEventListener('click', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
             }
-            video.srcObject = null;
             startBtn.disabled = false;
             stopBtn.disabled = true;
-            scanning = false;
         });
 
-        // البحث يدوياً
+        // البحث يدويًا
         searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
             if (barcode) {
@@ -277,9 +274,7 @@
             }
         });
 
-        // مسح QR Code
         function scanQRCode() {
-            if (!scanning) return;
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
@@ -294,7 +289,6 @@
             requestAnimationFrame(scanQRCode);
         }
 
-        // جلب البيانات من Google Sheets
         async function fetchData(barcode) {
             try {
                 currentBarcode = barcode;
