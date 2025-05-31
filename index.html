@@ -261,7 +261,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw4kzNABooz7OhKH4N-aAR1o91bUG7CdFyE4xQXoZbKx0PONXurRTFcYl02TxjE2Pdg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyJwDk4tacMqgZbMW5wAdYAWbhDD_zn11skKF6TBAPYZwskSujkvoWTmjh-_gUnO1-z/exec";
         
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -436,29 +436,29 @@
                     action: "update",
                     barcode: currentBarcode,
                     rowIndex: rowIndexInput.value,
-                    "Covering Area": document.getElementById('covering-area-edit').value,
-                    "Description": document.getElementById('description-edit').value,
-                    "Category Description": document.getElementById('category-desc-edit').value,
-                    "Last Inspection Date": document.getElementById('inspection-date-edit').value,
-                    "Last Testing Date": document.getElementById('testing-date-edit').value,
-                    "Operating Area": document.getElementById('operating-area-edit').value,
-                    "Business Line": document.getElementById('business-line-edit').value,
-                    "City": document.getElementById('city-edit').value,
-                    "S/s": document.getElementById('ss-edit').value,
-                    "Serial Number": document.getElementById('serial-number-edit').value,
-                    "Object Type": document.getElementById('object-type-edit').value,
-                    "Location": document.getElementById('location-edit').value,
-                    "Owning Dept.": document.getElementById('owning-dept-edit').value,
-                    "Business+Operating Area": document.getElementById('business-operating-area-edit').value
+                    coveringArea: document.getElementById('covering-area-edit').value,
+                    description: document.getElementById('description-edit').value,
+                    categoryDesc: document.getElementById('category-desc-edit').value,
+                    inspectionDate: document.getElementById('inspection-date-edit').value,
+                    testingDate: document.getElementById('testing-date-edit').value,
+                    operatingArea: document.getElementById('operating-area-edit').value,
+                    businessLine: document.getElementById('business-line-edit').value,
+                    city: document.getElementById('city-edit').value,
+                    ss: document.getElementById('ss-edit').value,
+                    serialNumber: document.getElementById('serial-number-edit').value,
+                    objectType: document.getElementById('object-type-edit').value,
+                    location: document.getElementById('location-edit').value,
+                    owningDept: document.getElementById('owning-dept-edit').value,
+                    businessOperatingArea: document.getElementById('business-operating-area-edit').value
                 };
                 
                 // إرسال البيانات للتحديث
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json',
                     },
-                    body: `data=${encodeURIComponent(JSON.stringify(updatedData))}`
+                    body: JSON.stringify(updatedData)
                 });
                 
                 if (!response.ok) {
@@ -482,6 +482,7 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء حفظ التعديلات");
+                console.error('Error details:', error);
             }
         });
         
