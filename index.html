@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -123,12 +123,26 @@
             background: rgba(234,67,53,0.1);
             display: none;
         }
+        /* تعديلات جديدة */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            width: 150px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
-        
+        <!-- إضافة لوجو الشركة -->
+        <div class="logo-container">
+            <img src="https://i.imgur.com/your-logo-url.png " alt="Giza Systems Logo">
+            <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        </div>
         <div id="scanner-container">
             <video id="video" playsinline></video>
             <canvas id="canvas"></canvas>
@@ -136,20 +150,16 @@
                 <div class="scanner-line"></div>
             </div>
         </div>
-        
         <div class="controls">
             <button id="start-btn">بدء المسح</button>
             <button id="stop-btn" disabled>إيقاف المسح</button>
         </div>
-        
         <div id="manual-input">
             <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
             <button id="search-btn">بحث</button>
         </div>
-        
         <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
-        
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
             <div class="product-field">
@@ -214,10 +224,8 @@
             </div>
         </div>
     </div>
-
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwMVtEEOfuujGMKMloZpGnoZKUX5lJAnAB6CnCSp7NWrFUr3CJh_Cf-rzUTP5yqRL78/exec";
-        
+        const API_URL = "https://script.google.com/macros/s/AKfycbyNyRLGierhKhC_oDPsbc-oTnepDRHq8_8Dfaks8_6S7uZBRJZbYr96_tJtYnbFhlqg/exec ";
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -228,10 +236,8 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
-        
         let stream = null;
         let scanning = false;
-        
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
@@ -240,17 +246,14 @@
                 });
                 video.srcObject = stream;
                 video.play();
-                
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 scanning = true;
-                
                 scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
             }
         });
-        
         // إيقاف المسح
         stopBtn.addEventListener('click', () => {
             if (stream) {
@@ -262,7 +265,6 @@
             stopBtn.disabled = true;
             scanning = false;
         });
-        
         // البحث يدوياً
         searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
@@ -272,44 +274,34 @@
                 showError("الرجاء إدخال باركود صحيح");
             }
         });
-        
         // مسح QR Code
         function scanQRCode() {
             if (!scanning) return;
-            
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
-                
                 if (code) {
                     stopBtn.click();
                     fetchData(code.data);
                 }
             }
-            
             requestAnimationFrame(scanQRCode);
         }
-        
         // جلب البيانات من Google Sheets
         async function fetchData(barcode) {
             try {
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
                 resultDiv.style.display = "none";
-                
                 const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
                 const data = await response.json();
-                
                 loading.style.display = "none";
-                
                 if (data.status === "error") {
                     throw new Error(data.message);
                 }
-                
                 // تعبئة البيانات
                 document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
                 document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
@@ -326,16 +318,13 @@
                 document.getElementById('location').textContent = data["Location"] || "-";
                 document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
                 document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
-                
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
-                
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
             }
         }
-        
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
