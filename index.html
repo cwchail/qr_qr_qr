@@ -109,6 +109,14 @@
         .field-value {
             font-size: 16px;
         }
+        .field-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
         #loading {
             display: none;
             margin: 20px;
@@ -122,6 +130,26 @@
             border-radius: 5px;
             background: rgba(234,67,53,0.1);
             display: none;
+        }
+        #success-message {
+            color: #34A853;
+            margin: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(52,168,83,0.1);
+            display: none;
+        }
+        .edit-buttons {
+            margin-top: 20px;
+        }
+        .edit-btn {
+            background: #FBBC05;
+        }
+        .save-btn {
+            background: #34A853;
+        }
+        .cancel-btn {
+            background: #EA4335;
         }
     </style>
 </head>
@@ -149,80 +177,96 @@
         
         <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
+        <div id="success-message"></div>
         
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <span class="field-value" id="functional-loc">-</span>
+                <input type="text" class="field-input" id="functional-loc-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التغطية:</span>
                 <span class="field-value" id="covering-area">-</span>
+                <input type="text" class="field-input" id="covering-area-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">الوصف:</span>
                 <span class="field-value" id="description">-</span>
+                <input type="text" class="field-input" id="description-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">وصف الفئة:</span>
                 <span class="field-value" id="category-desc">-</span>
+                <input type="text" class="field-input" id="category-desc-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">تاريخ آخر تفتيش:</span>
                 <span class="field-value" id="inspection-date">-</span>
+                <input type="text" class="field-input" id="inspection-date-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">تاريخ آخر اختبار:</span>
                 <span class="field-value" id="testing-date">-</span>
+                <input type="text" class="field-input" id="testing-date-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التشغيل:</span>
                 <span class="field-value" id="operating-area">-</span>
+                <input type="text" class="field-input" id="operating-area-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">خط الأعمال:</span>
                 <span class="field-value" id="business-line">-</span>
+                <input type="text" class="field-input" id="business-line-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">المدينة:</span>
                 <span class="field-value" id="city">-</span>
+                <input type="text" class="field-input" id="city-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">S/s:</span>
                 <span class="field-value" id="ss">-</span>
+                <input type="text" class="field-input" id="ss-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">الرقم التسلسلي:</span>
                 <span class="field-value" id="serial-number">-</span>
+                <input type="text" class="field-input" id="serial-number-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">نوع الكائن:</span>
                 <span class="field-value" id="object-type">-</span>
+                <input type="text" class="field-input" id="object-type-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">الموقع:</span>
                 <span class="field-value" id="location">-</span>
+                <input type="text" class="field-input" id="location-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">القسم المالك:</span>
                 <span class="field-value" id="owning-dept">-</span>
+                <input type="text" class="field-input" id="owning-dept-input" style="display: none;">
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة الأعمال+التشغيل:</span>
                 <span class="field-value" id="business-operating-area">-</span>
+                <input type="text" class="field-input" id="business-operating-area-input" style="display: none;">
+            </div>
+            
+            <div class="edit-buttons">
+                <button id="edit-btn" class="edit-btn">تعديل البيانات</button>
+                <button id="save-btn" class="save-btn" style="display: none;">حفظ التعديلات</button>
+                <button id="cancel-btn" class="cancel-btn" style="display: none;">إلغاء</button>
             </div>
         </div>
     </div>
 
     <script>
-        // تم استخدام تقنية التشفير البسيط لإخفاء رابط API
-        const API_ENCODED = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3ZGZHdkFSLXN2b3hBMklROWtDN21tM2M2YXUwekFUYk8wQjU1RlBiVDU2Tk5EVXRWaEQ5RWtPcUR4d18xMXpJSUsvZXhlYw==";
-        const API_URL = atob(API_ENCODED);
-        
-        // متغير للتحكم في معدل تحديث المسح
-        let scanInterval = null;
-        const SCAN_INTERVAL_DELAY = 500; // 500 مللي ثانية بين كل مسح
+        const API_URL = "https://script.google.com/macros/s/AKfycbxaiUb4WnXgI4ys2SYLeTDyuZh2FcIlUo4NnR1UOJ5x14rYjtW5AtBO9fiIqs3P83NG/exec";
         
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -233,10 +277,16 @@
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
+        const successMsg = document.getElementById('success-message');
         const resultDiv = document.getElementById('result');
+        const editBtn = document.getElementById('edit-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
         
         let stream = null;
         let scanning = false;
+        let currentBarcode = '';
+        let originalData = {};
         
         // بدء المسح
         startBtn.addEventListener('click', async () => {
@@ -245,14 +295,13 @@
                     video: { facingMode: "environment" }
                 });
                 video.srcObject = stream;
-                await video.play();
+                video.play();
                 
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 scanning = true;
                 
-                // بدء المسح بفاصل زمني محدد
-                scanInterval = setInterval(scanQRCode, SCAN_INTERVAL_DELAY);
+                scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
             }
@@ -260,54 +309,25 @@
         
         // إيقاف المسح
         stopBtn.addEventListener('click', () => {
-            stopScanning();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            scanning = false;
         });
         
         // البحث يدوياً
         searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
             if (barcode) {
-                if(validateInput(barcode)) {
-                    fetchData(barcode);
-                } else {
-                    showError("الرجاء إدخال باركود صحيح (أحرف وأرقام فقط)");
-                }
+                fetchData(barcode);
             } else {
-                showError("الرجاء إدخال باركود");
+                showError("الرجاء إدخال باركود صحيح");
             }
         });
-        
-        // السماح بإدخال البحث بالضغط على Enter
-        barcodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchBtn.click();
-            }
-        });
-        
-        // إيقاف المسح وتنظيف الموارد
-        function stopScanning() {
-            if (scanInterval) {
-                clearInterval(scanInterval);
-                scanInterval = null;
-            }
-            
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            
-            video.srcObject = null;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            scanning = false;
-        }
-        
-        // التحقق من صحة المدخلات
-        function validateInput(input) {
-            // فقط أحرف وأرقام وشرطة سفلية وشرطة
-            const regex = /^[a-zA-Z0-9_-]+$/;
-            return regex.test(input);
-        }
         
         // مسح QR Code
         function scanQRCode() {
@@ -322,14 +342,12 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
-                    stopScanning();
-                    if(validateInput(code.data)) {
-                        fetchData(code.data);
-                    } else {
-                        showError("تم مسح باركود غير صالح");
-                    }
+                    stopBtn.click();
+                    fetchData(code.data);
                 }
             }
+            
+            requestAnimationFrame(scanQRCode);
         }
         
         // جلب البيانات من Google Sheets
@@ -337,16 +355,10 @@
             try {
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
+                successMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 
-                // إضافة طابع زمني لتفادي التخزين المؤقت
-                const timestamp = new Date().getTime();
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}&t=${timestamp}`);
-                
-                if (!response.ok) {
-                    throw new Error(`خطأ في الشبكة: ${response.status}`);
-                }
-                
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
                 const data = await response.json();
                 
                 loading.style.display = "none";
@@ -355,19 +367,12 @@
                     throw new Error(data.message);
                 }
                 
-                // تعبئة البيانات مع التحقق من وجودها
-                const fields = [
-                    'functional-loc', 'covering-area', 'description', 
-                    'category-desc', 'inspection-date', 'testing-date',
-                    'operating-area', 'business-line', 'city', 'ss',
-                    'serial-number', 'object-type', 'location',
-                    'owning-dept', 'business-operating-area'
-                ];
+                // حفظ الباركود الحالي والبيانات الأصلية
+                currentBarcode = barcode;
+                originalData = JSON.parse(JSON.stringify(data));
                 
-                fields.forEach(field => {
-                    const value = data[field.replace('-', ' ')] || "-";
-                    document.getElementById(field).textContent = value;
-                });
+                // تعبئة البيانات
+                fillData(data);
                 
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
@@ -375,18 +380,138 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
-                console.error("Error fetching data:", error);
             }
         }
         
+        // تعبئة البيانات في النموذج
+        function fillData(data) {
+            document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
+            document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
+            document.getElementById('description').textContent = data["Description"] || "-";
+            document.getElementById('category-desc').textContent = data["Category Description"] || "-";
+            document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
+            document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
+            document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
+            document.getElementById('business-line').textContent = data["Business Line"] || "-";
+            document.getElementById('city').textContent = data["City"] || "-";
+            document.getElementById('ss').textContent = data["S/s"] || "-";
+            document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
+            document.getElementById('object-type').textContent = data["Object Type"] || "-";
+            document.getElementById('location').textContent = data["Location"] || "-";
+            document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
+            document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
+            
+            // إعادة تعيين وضع التعديل
+            cancelEdit();
+        }
+        
+        // عرض رسالة خطأ
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
         
-        // تنظيف الموارد عند إغلاق الصفحة
-        window.addEventListener('beforeunload', () => {
-            stopScanning();
+        // عرض رسالة نجاح
+        function showSuccess(message) {
+            successMsg.textContent = message;
+            successMsg.style.display = "block";
+            setTimeout(() => {
+                successMsg.style.display = "none";
+            }, 3000);
+        }
+        
+        // تفعيل وضع التعديل
+        editBtn.addEventListener('click', () => {
+            // إخفاء عناصر العرض وإظهار حقول الإدخال
+            document.querySelectorAll('.field-value').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.field-input').forEach(el => {
+                el.style.display = 'block';
+                const fieldId = el.id.replace('-input', '');
+                el.value = document.getElementById(fieldId).textContent;
+            });
+            
+            // تبديل الأزرار
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+        });
+        
+        // إلغاء التعديل
+        cancelBtn.addEventListener('click', cancelEdit);
+        
+        function cancelEdit() {
+            // إظهار عناصر العرض وإخفاء حقول الإدخال
+            document.querySelectorAll('.field-value').forEach(el => el.style.display = 'inline');
+            document.querySelectorAll('.field-input').forEach(el => el.style.display = 'none');
+            
+            // تبديل الأزرار
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            
+            // استعادة البيانات الأصلية
+            fillData(originalData);
+        }
+        
+        // حفظ التعديلات
+        saveBtn.addEventListener('click', async () => {
+            try {
+                loading.style.display = "block";
+                errorMsg.style.display = "none";
+                
+                // جمع البيانات المعدلة
+                const updatedData = {
+                    "Functional Loc.": document.getElementById('functional-loc-input').value,
+                    "Covering Area": document.getElementById('covering-area-input').value,
+                    "Description": document.getElementById('description-input').value,
+                    "Category Description": document.getElementById('category-desc-input').value,
+                    "Last Inspection Date": document.getElementById('inspection-date-input').value,
+                    "Last Testing Date": document.getElementById('testing-date-input').value,
+                    "Operating Area": document.getElementById('operating-area-input').value,
+                    "Business Line": document.getElementById('business-line-input').value,
+                    "City": document.getElementById('city-input').value,
+                    "S/s": document.getElementById('ss-input').value,
+                    "Serial Number": document.getElementById('serial-number-input').value,
+                    "Object Type": document.getElementById('object-type-input').value,
+                    "Location": document.getElementById('location-input').value,
+                    "Owning Dept.": document.getElementById('owning-dept-input').value,
+                    "Business+Operating Area": document.getElementById('business-operating-area-input').value
+                };
+                
+                // إرسال البيانات للتحديث
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'update',
+                        barcode: currentBarcode,
+                        data: updatedData
+                    })
+                });
+                
+                const result = await response.json();
+                
+                loading.style.display = "none";
+                
+                if (result.status === "error") {
+                    throw new Error(result.message);
+                }
+                
+                // تحديث البيانات الأصلية
+                originalData = updatedData;
+                
+                // الخروج من وضع التعديل
+                cancelEdit();
+                
+                // عرض رسالة نجاح
+                showSuccess("تم حفظ التعديلات بنجاح");
+                
+            } catch (error) {
+                loading.style.display = "none";
+                showError(error.message || "حدث خطأ أثناء حفظ التعديلات");
+            }
         });
     </script>
 </body>
