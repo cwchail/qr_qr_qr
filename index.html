@@ -3,128 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مسح QR Code - شركة جيزة العربية للأنظمة</title>
+    <title>شركة جيزة العربية للأنظمة | نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #4285F4;
-            --secondary: #34A853;
-            --warning: #FBBC05;
-            --danger: #EA4335;
-            --dark: #1a1a2e;
-            --light: #f5f5f5;
-            --gray: #e0e0e0;
-            --text: #333333;
-        }
-        
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 20px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
             min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
         
-        header {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        /* Header Styles */
+        .header {
+            background: linear-gradient(90deg, #0c2461, #1e3799);
             color: white;
-            padding: 25px 20px;
+            padding: 25px 30px;
             text-align: center;
             position: relative;
+            border-bottom: 5px solid #f6b93b;
         }
         
-        .logo {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            background: white;
-            color: var(--primary);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        h1 {
-            font-size: 28px;
+        .header h1 {
+            font-size: 32px;
             margin-bottom: 10px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .subtitle {
-            font-size: 18px;
-            opacity: 0.9;
+        .header h2 {
+            font-size: 22px;
+            font-weight: 400;
+            color: #f6b93b;
+            letter-spacing: 0.5px;
         }
         
+        /* Main Content */
         .main-content {
             display: flex;
             flex-wrap: wrap;
-            padding: 20px;
+            padding: 25px;
         }
         
         .scanner-section {
             flex: 1;
-            min-width: 300px;
-            padding: 15px;
+            min-width: 350px;
+            padding: 20px;
         }
         
         .data-section {
             flex: 1;
-            min-width: 300px;
-            padding: 15px;
+            min-width: 350px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 1px solid #e0e0e0;
         }
         
         .section-title {
-            font-size: 22px;
-            color: var(--primary);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--gray);
+            font-size: 24px;
+            color: #0c2461;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #f6b93b;
             text-align: center;
+            font-weight: 600;
         }
         
+        /* Scanner Styles */
         #scanner-container {
             width: 100%;
             margin: 0 auto;
             position: relative;
-            border: 2px solid var(--primary);
-            border-radius: 12px;
+            border: 3px solid #0c2461;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
         
         #video {
             width: 100%;
             display: block;
-            background: black;
-        }
-        
-        #canvas {
-            display: none;
+            background: #000;
         }
         
         .scanner-overlay {
@@ -143,84 +122,85 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
-            background: var(--danger);
-            box-shadow: 0 0 10px rgba(234, 67, 53, 0.7);
-            animation: scan 2s infinite ease-in-out;
+            height: 5px;
+            background: #f6b93b;
+            box-shadow: 0 0 15px rgba(246, 185, 59, 0.8);
+            animation: scan 2s infinite linear;
             pointer-events: none;
         }
         
         @keyframes scan {
             0% { top: 0; }
-            50% { top: calc(100% - 4px); }
-            100% { top: 0; }
+            100% { top: 100%; }
         }
         
+        /* Controls */
         .controls {
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin: 20px 0;
+            margin: 25px 0;
             flex-wrap: wrap;
         }
         
-        button {
-            font-family: 'Tajawal', sans-serif;
-            font-weight: 500;
-            font-size: 16px;
+        .btn {
+            padding: 14px 30px;
             border: none;
-            padding: 12px 25px;
             border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         }
         
-        button i {
-            font-size: 18px;
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
         
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-        
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        .btn:active {
+            transform: translateY(1px);
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(to right, #1e3799, #0c2461);
             color: white;
         }
         
         .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-success {
-            background: var(--secondary);
+            background: linear-gradient(to right, #e55039, #eb2f06);
             color: white;
         }
         
         .btn-warning {
-            background: var(--warning);
+            background: linear-gradient(to right, #fa983a, #f6b93b);
             color: white;
         }
         
-        #manual-input {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 12px;
+        .btn-success {
+            background: linear-gradient(to right, #38ada9, #079992);
+            color: white;
+        }
+        
+        /* Manual Input */
+        .manual-input {
+            background: #eef2f7;
+            padding: 25px;
+            border-radius: 15px;
             margin: 20px 0;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid #d1d8e0;
+        }
+        
+        .manual-input h3 {
+            font-size: 20px;
+            color: #0c2461;
+            margin-bottom: 20px;
+            text-align: center;
         }
         
         .input-group {
@@ -230,95 +210,102 @@
         
         #barcode-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 2px solid var(--gray);
+            padding: 16px 20px;
+            border: 2px solid #d1d8e0;
             border-radius: 50px;
-            font-size: 16px;
-            font-family: 'Tajawal', sans-serif;
-            transition: border-color 0.3s;
+            font-size: 18px;
+            transition: all 0.3s;
+            outline: none;
         }
         
         #barcode-input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+            border-color: #1e3799;
+            box-shadow: 0 0 0 3px rgba(30, 55, 153, 0.2);
         }
         
+        /* Result Section */
         #result {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            text-align: right;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
             display: none;
-            border: 1px solid var(--gray);
         }
         
         .result-header {
             text-align: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--primary);
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #f6b93b;
         }
         
         .result-header h2 {
-            color: var(--primary);
-            font-size: 24px;
+            color: #0c2461;
+            font-size: 28px;
+            margin-bottom: 15px;
         }
         
         .barcode-display {
-            background: #f0f7ff;
-            padding: 10px 15px;
-            border-radius: 8px;
+            background: #eef2f7;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 20px;
             font-weight: bold;
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px dashed var(--primary);
+            color: #1e3799;
+            display: inline-block;
+            border: 2px dashed #1e3799;
         }
         
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
         }
         
         .product-field {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #1e3799;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+        
+        .product-field:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
         
         .field-label {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 15px;
+            font-weight: 700;
+            color: #0c2461;
+            margin-bottom: 10px;
+            font-size: 18px;
         }
         
         .field-value {
-            font-size: 16px;
+            font-size: 18px;
             padding: 8px 0;
-            min-height: 24px;
+            min-height: 30px;
+            color: #333;
         }
         
         .field-input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid var(--gray);
+            padding: 12px;
+            border: 2px solid #d1d8e0;
             border-radius: 8px;
             font-size: 16px;
-            font-family: 'Tajawal', sans-serif;
             transition: border-color 0.3s;
             display: none;
         }
         
         .field-input:focus {
-            border-color: var(--primary);
+            border-color: #1e3799;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+            box-shadow: 0 0 0 3px rgba(30, 55, 153, 0.2);
         }
         
         .edit-mode .field-value {
@@ -332,27 +319,29 @@
         .edit-buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 20px;
+            margin-top: 30px;
             flex-wrap: wrap;
         }
         
+        /* Messages */
         #loading {
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin: 30px 0;
+            padding: 40px;
+            text-align: center;
         }
         
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(66, 133, 244, 0.2);
-            border-top: 5px solid var(--primary);
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(30, 55, 153, 0.2);
+            border-top: 6px solid #1e3799;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         @keyframes spin {
@@ -361,65 +350,107 @@
         }
         
         .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
             text-align: center;
+            font-size: 18px;
             display: none;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         .error-message {
-            background: rgba(234, 67, 53, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(234, 67, 53, 0.3);
+            background: rgba(231, 76, 60, 0.15);
+            color: #c23616;
+            border: 2px solid rgba(231, 76, 60, 0.3);
         }
         
         .success-message {
-            background: rgba(52, 168, 83, 0.1);
-            color: var(--secondary);
-            border: 1px solid rgba(52, 168, 83, 0.3);
+            background: rgba(46, 213, 115, 0.15);
+            color: #218c74;
+            border: 2px solid rgba(46, 213, 115, 0.3);
         }
         
-        footer {
+        /* Footer */
+        .footer {
             text-align: center;
             padding: 20px;
-            background: var(--dark);
+            background: #0c2461;
             color: white;
-            font-size: 14px;
-            margin-top: 20px;
+            font-size: 16px;
         }
         
-        @media (max-width: 768px) {
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 900px) {
             .main-content {
                 flex-direction: column;
             }
             
-            header {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .header h2 {
+                font-size: 20px;
+            }
+            
+            .section-title {
+                font-size: 22px;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
                 padding: 20px 15px;
             }
             
-            h1 {
+            .header h1 {
                 font-size: 24px;
             }
             
-            .subtitle {
-                font-size: 16px;
+            .header h2 {
+                font-size: 18px;
             }
             
             .section-title {
                 font-size: 20px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            #barcode-input {
+                width: 100%;
+            }
+            
+            .edit-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="logo">GA</div>
+        <div class="header">
             <h1>شركة جيزة العربية للأنظمة</h1>
-            <div class="subtitle">نظام مسح QR Code وإدارة البيانات</div>
-        </header>
+            <h2>نظام مسح QR Code وإدارة البيانات</h2>
+        </div>
         
         <div class="main-content">
             <div class="scanner-section">
@@ -427,34 +458,33 @@
                 
                 <div id="scanner-container">
                     <video id="video" playsinline></video>
-                    <canvas id="canvas"></canvas>
                     <div class="scanner-overlay">
                         <div class="scanner-line"></div>
                     </div>
                 </div>
                 
                 <div class="controls">
-                    <button id="start-btn" class="btn-primary">
-                        <i>▶</i> بدء المسح
+                    <button id="start-btn" class="btn btn-primary">
+                        <i class="fas fa-camera"></i> بدء المسح
                     </button>
-                    <button id="stop-btn" class="btn-danger" disabled>
-                        <i>⏹</i> إيقاف المسح
+                    <button id="stop-btn" class="btn btn-danger" disabled>
+                        <i class="fas fa-stop"></i> إيقاف المسح
                     </button>
                 </div>
                 
-                <div id="manual-input">
-                    <h3 style="margin-bottom: 15px; color: var(--primary);">الإدخال اليدوي</h3>
+                <div class="manual-input">
+                    <h3>الإدخال اليدوي</h3>
                     <div class="input-group">
                         <input type="text" id="barcode-input" placeholder="أدخل الرمز يدوياً...">
-                        <button id="search-btn" class="btn-primary">
-                            <i>🔍</i> بحث
+                        <button id="search-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> بحث
                         </button>
                     </div>
                 </div>
                 
                 <div id="loading">
                     <div class="spinner"></div>
-                    <div>جاري جلب البيانات...</div>
+                    <div style="font-size: 20px; font-weight: 600; color: #0c2461;">جاري جلب البيانات...</div>
                 </div>
                 
                 <div id="error-message" class="message error-message"></div>
@@ -472,124 +502,123 @@
                     
                     <div class="product-grid">
                         <div class="product-field">
-                            <span class="field-label">الموقع الوظيفي:</span>
+                            <div class="field-label">الموقع الوظيفي:</div>
                             <div class="field-value" id="functional-loc">-</div>
                             <input type="text" class="field-input" id="functional-loc-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">منطقة التغطية:</span>
+                            <div class="field-label">منطقة التغطية:</div>
                             <div class="field-value" id="covering-area">-</div>
                             <input type="text" class="field-input" id="covering-area-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">الوصف:</span>
+                            <div class="field-label">الوصف:</div>
                             <div class="field-value" id="description">-</div>
                             <input type="text" class="field-input" id="description-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">وصف الفئة:</span>
+                            <div class="field-label">وصف الفئة:</div>
                             <div class="field-value" id="category-desc">-</div>
                             <input type="text" class="field-input" id="category-desc-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">تاريخ آخر تفتيش:</span>
+                            <div class="field-label">تاريخ آخر تفتيش:</div>
                             <div class="field-value" id="inspection-date">-</div>
                             <input type="text" class="field-input" id="inspection-date-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">تاريخ آخر اختبار:</span>
+                            <div class="field-label">تاريخ آخر اختبار:</div>
                             <div class="field-value" id="testing-date">-</div>
                             <input type="text" class="field-input" id="testing-date-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">منطقة التشغيل:</span>
+                            <div class="field-label">منطقة التشغيل:</div>
                             <div class="field-value" id="operating-area">-</div>
                             <input type="text" class="field-input" id="operating-area-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">خط الأعمال:</span>
+                            <div class="field-label">خط الأعمال:</div>
                             <div class="field-value" id="business-line">-</div>
                             <input type="text" class="field-input" id="business-line-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">المدينة:</span>
+                            <div class="field-label">المدينة:</div>
                             <div class="field-value" id="city">-</div>
                             <input type="text" class="field-input" id="city-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">S/s:</span>
+                            <div class="field-label">S/s:</div>
                             <div class="field-value" id="ss">-</div>
                             <input type="text" class="field-input" id="ss-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">الرقم التسلسلي:</span>
+                            <div class="field-label">الرقم التسلسلي:</div>
                             <div class="field-value" id="serial-number">-</div>
                             <input type="text" class="field-input" id="serial-number-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">نوع الكائن:</span>
+                            <div class="field-label">نوع الكائن:</div>
                             <div class="field-value" id="object-type">-</div>
                             <input type="text" class="field-input" id="object-type-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">الموقع:</span>
+                            <div class="field-label">الموقع:</div>
                             <div class="field-value" id="location">-</div>
                             <input type="text" class="field-input" id="location-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">القسم المالك:</span>
+                            <div class="field-label">القسم المالك:</div>
                             <div class="field-value" id="owning-dept">-</div>
                             <input type="text" class="field-input" id="owning-dept-input">
                         </div>
                         
                         <div class="product-field">
-                            <span class="field-label">منطقة الأعمال+التشغيل:</span>
+                            <div class="field-label">منطقة الأعمال+التشغيل:</div>
                             <div class="field-value" id="business-operating-area">-</div>
                             <input type="text" class="field-input" id="business-operating-area-input">
                         </div>
                     </div>
                     
                     <div class="edit-buttons">
-                        <button id="edit-btn" class="btn-warning">
-                            <i>✏️</i> تعديل البيانات
+                        <button id="edit-btn" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> تعديل البيانات
                         </button>
-                        <button id="save-btn" class="btn-success" style="display: none;">
-                            <i>💾</i> حفظ التعديلات
+                        <button id="save-btn" class="btn btn-success" style="display: none;">
+                            <i class="fas fa-save"></i> حفظ التعديلات
                         </button>
-                        <button id="cancel-btn" class="btn-danger" style="display: none;">
-                            <i>❌</i> إلغاء
+                        <button id="cancel-btn" class="btn btn-danger" style="display: none;">
+                            <i class="fas fa-times"></i> إلغاء
                         </button>
                     </div>
                 </div>
             </div>
         </div>
         
-        <footer>
+        <div class="footer">
             <p>جميع الحقوق محفوظة © 2023 شركة جيزة العربية للأنظمة</p>
             <p>نظام إدارة البيانات عبر QR Code | الإصدار 2.0</p>
-        </footer>
+        </div>
     </div>
 
     <script>
+        // API URL - يجب تحديث هذا الرابط ليشير إلى سكريبت جوجل شيت الخاص بك
         const API_URL = "https://script.google.com/macros/s/AKfycbwLcXNTE5Paidmg4Wxj-N4xopkCrW4Rj5pk5HJEt6rKsgLKoEmz089vVrFwmiRiJejL/exec";
         
         // عناصر واجهة المستخدم
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
         const startBtn = document.getElementById('start-btn');
         const stopBtn = document.getElementById('stop-btn');
         const searchBtn = document.getElementById('search-btn');
@@ -662,6 +691,9 @@
         // عملية مسح الرمز QR
         function scanQRCode() {
             if (!scanning) return;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.width = video.videoWidth;
@@ -773,8 +805,8 @@
         editBtn.addEventListener('click', () => {
             resultDiv.classList.add('edit-mode');
             editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'block';
+            cancelBtn.style.display = 'block';
         });
         
         // إلغاء التعديل
@@ -787,7 +819,7 @@
         // إعادة تعيين وضع التعديل
         function resetEditMode() {
             resultDiv.classList.remove('edit-mode');
-            editBtn.style.display = 'inline-block';
+            editBtn.style.display = 'block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
         }
@@ -886,6 +918,13 @@
                 searchBtn.click();
             }
         });
+        
+        // إظهار رسالة ترحيبية عند التحميل
+        window.onload = () => {
+            setTimeout(() => {
+                showSuccess("مرحباً! يرجى بدء المسح أو إدخال الرمز يدوياً");
+            }, 1000);
+        };
     </script>
 </body>
 </html>
