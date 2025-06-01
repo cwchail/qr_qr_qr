@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مسح QR Code مع التعديل</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+    <title>نظام مسح QR Code</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -16,24 +16,15 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #4285F4;
-            margin-bottom: 30px;
         }
         #scanner-container {
             width: 100%;
             max-width: 500px;
             margin: 20px auto;
             position: relative;
-            border: 3px solid #4285F4;
-            border-radius: 10px;
+            border: 2px solid #333;
+            border-radius: 8px;
             overflow: hidden;
-            background: black;
         }
         #video {
             width: 100%;
@@ -57,9 +48,9 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
+            height: 3px;
             background: #EA4335;
-            box-shadow: 0 0 15px rgba(234,67,53,0.8);
+            box-shadow: 0 0 10px rgba(234,67,53,0.7);
             animation: scan 2s infinite linear;
             pointer-events: none;
         }
@@ -68,162 +59,79 @@
             100% { top: 100%; }
         }
         .controls {
-            margin: 25px 0;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+            margin: 20px 0;
         }
         button {
             background: #4285F4;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        button:hover {
-            background: #3367D6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         button:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
         #manual-input {
-            margin: 25px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
+            margin: 20px 0;
         }
         #barcode-input {
-            padding: 12px 15px;
-            width: 250px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
+            padding: 10px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             font-size: 16px;
-            transition: border 0.3s;
-        }
-        #barcode-input:focus {
-            border-color: #4285F4;
-            outline: none;
         }
         #result {
             background: white;
-            padding: 25px;
-            margin: 25px auto;
-            max-width: 650px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: right;
             display: none;
-            border: 1px solid #eee;
-        }
-        #result h2 {
-            color: #4285F4;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 24px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
         }
         .product-field {
-            margin-bottom: 18px;
-            padding-bottom: 18px;
-            border-bottom: 1px dashed #eee;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
         .field-label {
             font-weight: bold;
             color: #4285F4;
             display: block;
-            margin-bottom: 8px;
-            font-size: 16px;
+            margin-bottom: 5px;
         }
-        .field-value {
-            font-size: 16px;
-            color: #333;
-        }
-        .editable-field {
+        input.editable-field {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             font-size: 16px;
-            box-sizing: border-box;
-            margin-top: 5px;
-            transition: border 0.3s;
-            display: none;
-        }
-        .editable-field:focus {
-            border-color: #4285F4;
-            outline: none;
         }
         #loading {
             display: none;
-            margin: 25px;
+            margin: 20px;
             font-size: 18px;
             color: #4285F4;
         }
         #error-message {
             color: #EA4335;
-            margin: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            background: rgba(234,67,53,0.1);
-            display: none;
-            border: 1px solid rgba(234,67,53,0.3);
-            font-weight: bold;
-        }
-        #save-btn {
-            background: #34A853;
-            margin-top: 25px;
-            display: none;
-        }
-        #edit-btn {
-            background: #FBBC05;
-            margin-top: 20px;
-        }
-        #success-message {
-            color: #34A853;
-            margin: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            background: rgba(52,168,83,0.1);
-            display: none;
-            border: 1px solid rgba(52,168,83,0.3);
-            font-weight: bold;
-        }
-        .hidden {
-            display: none;
-        }
-        #connection-status {
-            margin: 10px;
+            margin: 15px;
             padding: 10px;
             border-radius: 5px;
-            font-size: 14px;
-        }
-        .connected {
-            background: rgba(52,168,83,0.1);
-            color: #34A853;
-        }
-        .disconnected {
             background: rgba(234,67,53,0.1);
-            color: #EA4335;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>نظام مسح وتعديل QR Code</h1>
-        <div id="connection-status" class="hidden">جاري اختبار الاتصال بالسيرفر...</div>
-        
+        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
         <div id="scanner-container">
             <video id="video" playsinline></video>
             <canvas id="canvas"></canvas>
@@ -231,64 +139,88 @@
                 <div class="scanner-line"></div>
             </div>
         </div>
-        
         <div class="controls">
-            <button id="start-btn">
-                <span class="icon">📷</span> بدء المسح
-            </button>
-            <button id="stop-btn" disabled>
-                <span class="icon">⏹️</span> إيقاف المسح
-            </button>
+            <button id="start-btn">بدء المسح</button>
+            <button id="stop-btn" disabled>إيقاف المسح</button>
         </div>
-        
         <div id="manual-input">
-            <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً هنا...">
-            <button id="search-btn">
-                <span class="icon">🔍</span> بحث
-            </button>
+            <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
+            <button id="search-btn">بحث</button>
         </div>
-        
-        <div id="loading">
-            <div class="spinner">⏳</div>
-            جاري جلب البيانات...
-        </div>
+        <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
-        <div id="success-message"></div>
-        
+
+        <!-- النتائج القابلة للتعديل -->
         <div id="result">
-            <h2>تفاصيل البطاقة</h2>
-            <input type="hidden" id="row-index">
-            
+            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
-                <span class="field-value" id="functional-loc">-</span>
-                <input type="text" class="editable-field" id="functional-loc-edit" disabled>
+                <input type="text" class="editable-field" id="functionalloc" readonly>
             </div>
-            
             <div class="product-field">
                 <span class="field-label">منطقة التغطية:</span>
-                <span class="field-value" id="covering-area">-</span>
-                <input type="text" class="editable-field" id="covering-area-edit">
+                <input type="text" class="editable-field" id="coveringarea">
             </div>
-            
-            <!-- باقي الحقول بنفس النمط -->
-            
-            <div class="action-buttons">
-                <button id="edit-btn">
-                    <span class="icon">✏️</span> تعديل البيانات
-                </button>
-                <button id="save-btn">
-                    <span class="icon">💾</span> حفظ التعديلات
-                </button>
+            <div class="product-field">
+                <span class="field-label">الوصف:</span>
+                <input type="text" class="editable-field" id="description">
             </div>
+            <div class="product-field">
+                <span class="field-label">وصف الفئة:</span>
+                <input type="text" class="editable-field" id="categorydesc">
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر تفتيش:</span>
+                <input type="text" class="editable-field" id="inspectiondate">
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر اختبار:</span>
+                <input type="text" class="editable-field" id="testingdate">
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة التشغيل:</span>
+                <input type="text" class="editable-field" id="operatingarea">
+            </div>
+            <div class="product-field">
+                <span class="field-label">خط الأعمال:</span>
+                <input type="text" class="editable-field" id="businessline">
+            </div>
+            <div class="product-field">
+                <span class="field-label">المدينة:</span>
+                <input type="text" class="editable-field" id="city">
+            </div>
+            <div class="product-field">
+                <span class="field-label">S/s:</span>
+                <input type="text" class="editable-field" id="ss">
+            </div>
+            <div class="product-field">
+                <span class="field-label">الرقم التسلسلي:</span>
+                <input type="text" class="editable-field" id="serialnumber">
+            </div>
+            <div class="product-field">
+                <span class="field-label">نوع الكائن:</span>
+                <input type="text" class="editable-field" id="objecttype">
+            </div>
+            <div class="product-field">
+                <span class="field-label">الموقع:</span>
+                <input type="text" class="editable-field" id="location">
+            </div>
+            <div class="product-field">
+                <span class="field-label">القسم المالك:</span>
+                <input type="text" class="editable-field" id="owningdept">
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة الأعمال+التشغيل:</span>
+                <input type="text" class="editable-field" id="businessoperatingarea">
+            </div>
+
+            <button id="save-btn" style="margin-top: 20px;">حفظ التعديلات</button>
         </div>
     </div>
 
     <script>
-        // رابط سكريبت جوجل (يجب استبداله برابطك بعد النشر)
-        const API_URL = "https://script.google.com/macros/s/AKfycbxfeQ7-PqwaCAGpTx0SqPrvjwUCxcGyeyvJrWoGnlzqCk-ZX9tZSxiX-ZZZnd89o9OY/exec";
-        
-        // عناصر واجهة المستخدم
+        const API_URL = "https://script.google.com/macros/s/AKfycbzpeqi5zQkyzGVS_wX92jqlecBRtwjexirzz8DBkKDobiZKqQb4uy3Qg9DAqzQFgjZk/exec ";
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -298,324 +230,119 @@
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
-        const successMsg = document.getElementById('success-message');
         const resultDiv = document.getElementById('result');
-        const editBtn = document.getElementById('edit-btn');
         const saveBtn = document.getElementById('save-btn');
-        const rowIndexInput = document.getElementById('row-index');
-        const connectionStatus = document.getElementById('connection-status');
-        
-        // متغيرات النظام
-        let stream = null;
-        let scanning = false;
+
         let currentBarcode = "";
-        
-        // اختبار الاتصال بالسيرفر عند التحميل
-        window.addEventListener('load', () => {
-            testConnection();
-        });
-        
-        // بدء عملية المسح
+
+        // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
-                console.log("جاري تشغيل الكاميرا...");
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
-                await video.play();
-                
+                video.play();
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
-                scanning = true;
-                
-                console.log("الكاميرا جاهزة، بدء المسح...");
-                scanQRCode();
+
+                scanQRCode(stream);
             } catch (err) {
-                console.error("خطأ في تشغيل الكاميرا:", err);
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
             }
         });
-        
-        // إيقاف عملية المسح
-        stopBtn.addEventListener('click', () => {
-            console.log("إيقاف المسح...");
-            if (stream) {
-                stream.getTracks().forEach(track => {
-                    track.stop();
-                    console.log("تم إيقاف track:", track);
-                });
-                stream = null;
-            }
-            video.srcObject = null;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            scanning = false;
-            console.log("تم إيقاف المسح بنجاح");
-        });
-        
-        // البحث يدوياً عن طريق إدخال الباركود
-        searchBtn.addEventListener('click', () => {
-            const barcode = barcodeInput.value.trim();
-            if (barcode) {
-                console.log("جاري البحث عن الباركود:", barcode);
-                fetchData(barcode);
-            } else {
-                showError("الرجاء إدخال باركود صحيح");
-            }
-        });
-        
-        // مسح QR Code
-        function scanQRCode() {
-            if (!scanning) {
-                console.log("المسح متوقف");
-                return;
-            }
-            
+
+        function scanQRCode(stream) {
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: "dontInvert",
-                });
-                
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
                 if (code) {
-                    console.log("تم العثور على QR Code:", code.data);
                     stopBtn.click();
                     fetchData(code.data);
                 }
             }
-            
-            requestAnimationFrame(scanQRCode);
+            requestAnimationFrame(() => scanQRCode(stream));
         }
-        
-        // جلب البيانات من Google Sheets
+
+        stopBtn.addEventListener('click', () => {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+
+        searchBtn.addEventListener('click', () => {
+            const barcode = barcodeInput.value.trim();
+            if (barcode) fetchData(barcode);
+            else showError("الرجاء إدخال باركود صحيح");
+        });
+
         async function fetchData(barcode) {
             try {
-                console.log("جاري جلب البيانات للباركود:", barcode);
-                
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
-                successMsg.style.display = "none";
                 resultDiv.style.display = "none";
-                saveBtn.style.display = "none";
-                
-                // إضافة timestamp لمنع التخزين المؤقت
-                const url = `${API_URL}?barcode=${encodeURIComponent(barcode)}&t=${Date.now()}`;
-                console.log("URL المطلوب:", url);
-                
-                const response = await fetch(url);
-                console.log("استجابة السيرفر:", response);
-                
-                if (!response.ok) {
-                    throw new Error(`فشل في جلب البيانات: ${response.status} ${response.statusText}`);
-                }
-                
+
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
                 const data = await response.json();
-                console.log("البيانات المستلمة:", data);
-                
+
                 loading.style.display = "none";
-                
-                if (data.status === "error") {
-                    throw new Error(data.message);
-                }
-                
-                if (!data || typeof data !== 'object') {
-                    throw new Error("بيانات غير صالحة من السيرفر");
-                }
-                
-                // تعبئة البيانات في الحقول
-                const fieldsMapping = {
-                    'functional-loc': 'Functional Loc',
-                    'covering-area': 'Covering Area',
-                    'description': 'Description',
-                    'category-desc': 'Category Description',
-                    'inspection-date': 'Last Inspection Date',
-                    'testing-date': 'Last Testing Date',
-                    'operating-area': 'Operating Area',
-                    'business-line': 'Business Line',
-                    'city': 'City',
-                    'ss': 'S/s',
-                    'serial-number': 'Serial Number',
-                    'object-type': 'Object Type',
-                    'location': 'Location',
-                    'owning-dept': 'Owning Dept',
-                    'business-operating-area': 'Business+Operating Area'
-                };
-                
-                Object.entries(fieldsMapping).forEach(([fieldId, dataKey]) => {
-                    const value = data[dataKey] || data[dataKey.replace(' ', '+')] || "-";
-                    document.getElementById(fieldId).textContent = value;
-                    document.getElementById(`${fieldId}-edit`).value = value === "-" ? "" : value;
-                });
-                
+
+                if (data.status === "error") throw new Error(data.message);
+
+                // عرض البيانات في الحقول
                 currentBarcode = barcode;
-                rowIndexInput.value = data.rowIndex;
+                document.getElementById('functionalloc').value = data.functionalloc || "";
+                document.getElementById('coveringarea').value = data.coveringarea || "";
+                document.getElementById('description').value = data.description || "";
+                document.getElementById('categorydesc').value = data.categorydesc || "";
+                document.getElementById('inspectiondate').value = data.inspectiondate || "";
+                document.getElementById('testingdate').value = data.testingdate || "";
+                document.getElementById('operatingarea').value = data.operatingarea || "";
+                document.getElementById('businessline').value = data.businessline || "";
+                document.getElementById('city').value = data.city || "";
+                document.getElementById('ss').value = data.ss || "";
+                document.getElementById('serialnumber').value = data.serialnumber || "";
+                document.getElementById('objecttype').value = data.objecttype || "";
+                document.getElementById('location').value = data.location || "";
+                document.getElementById('owningdept').value = data.owningdept || "";
+                document.getElementById('businessoperatingarea').value = data.businessoperatingarea || "";
+
                 resultDiv.style.display = "block";
-                editBtn.style.display = "inline-block";
                 barcodeInput.value = "";
-                
-                console.log("تم عرض البيانات بنجاح");
-                
             } catch (error) {
-                console.error("حدث خطأ أثناء جلب البيانات:", error);
                 loading.style.display = "none";
-                
-                const errorDetails = `
-                    فشل في جلب البيانات!
-                    الباركود: ${barcode}
-                    الخطأ: ${error.message}
-                    الرجاء التحقق من:
-                    1- اتصال الإنترنت
-                    2- وجود الباركود في الجدول
-                    3- صحة إعدادات السكريبت
-                `;
-                
-                showError(errorDetails);
+                showError(error.message || "حدث خطأ أثناء جلب البيانات");
             }
         }
-        
-        // اختبار اتصال بالسيرفر
-        async function testConnection() {
-            try {
-                connectionStatus.textContent = "جاري اختبار الاتصال بالسيرفر...";
-                connectionStatus.className = "";
-                connectionStatus.classList.remove('connected', 'disconnected');
-                connectionStatus.classList.add('hidden');
-                
-                const testBarcode = "TEST123"; // استخدم باركود موجود في جدولك
-                const url = `${API_URL}?barcode=${encodeURIComponent(testBarcode)}&t=${Date.now()}`;
-                console.log("جاري اختبار الاتصال بـ:", url);
-                
-                const response = await fetch(url);
-                console.log("حالة الاستجابة:", response.status, response.statusText);
-                
-                const data = await response.json();
-                console.log("بيانات الاختبار:", data);
-                
-                if (data.status === "success") {
-                    connectionStatus.textContent = "✓ الاتصال بالسيرفر ناجح";
-                    connectionStatus.className = "connected";
-                    console.log("الاتصال ناجح! البيانات المستلمة:", data);
-                    return true;
-                } else {
-                    connectionStatus.textContent = "✗ فشل الاتصال بالسيرفر: " + (data.message || "الباركود غير موجود");
-                    connectionStatus.className = "disconnected";
-                    console.error("الاتصال فشل:", data.message);
-                    return false;
-                }
-            } catch (error) {
-                connectionStatus.textContent = `✗ خطأ في الاتصال: ${error.message}`;
-                connectionStatus.className = "disconnected";
-                console.error("حدث خطأ في اختبار الاتصال:", error);
-                return false;
-            } finally {
-                connectionStatus.classList.remove('hidden');
-            }
-        }
-        
-        // تفعيل وضع التعديل
-        editBtn.addEventListener('click', () => {
-            console.log("تفعيل وضع التعديل...");
-            
-            document.querySelectorAll('.field-value').forEach(el => {
-                el.style.display = 'none';
+
+        saveBtn.addEventListener('click', () => {
+            const updatedData = {};
+            document.querySelectorAll('.editable-field').forEach(input => {
+                updatedData[input.id] = input.value;
             });
-            
-            document.querySelectorAll('.editable-field').forEach(el => {
-                if (!el.disabled) {
-                    el.style.display = 'block';
-                }
-            });
-            
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ barcode: currentBarcode, data: updatedData })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === "success") alert("تم حفظ التعديلات بنجاح");
+                else alert("فشل في الحفظ: " + response.message);
+            })
+            .catch(err => alert("حدث خطأ في الإرسال: " + err.message));
         });
-        
-        // حفظ التعديلات
-        saveBtn.addEventListener('click', async () => {
-            try {
-                loading.style.display = "block";
-                errorMsg.style.display = "none";
-                successMsg.style.display = "none";
-                
-                const updatedData = {
-                    action: "update",
-                    barcode: currentBarcode,
-                    rowIndex: rowIndexInput.value,
-                    coveringArea: document.getElementById('covering-area-edit').value,
-                    description: document.getElementById('description-edit').value,
-                    categoryDesc: document.getElementById('category-desc-edit').value,
-                    inspectionDate: document.getElementById('inspection-date-edit').value,
-                    testingDate: document.getElementById('testing-date-edit').value,
-                    operatingArea: document.getElementById('operating-area-edit').value,
-                    businessLine: document.getElementById('business-line-edit').value,
-                    city: document.getElementById('city-edit').value,
-                    ss: document.getElementById('ss-edit').value,
-                    serialNumber: document.getElementById('serial-number-edit').value,
-                    objectType: document.getElementById('object-type-edit').value,
-                    location: document.getElementById('location-edit').value,
-                    owningDept: document.getElementById('owning-dept-edit').value,
-                    businessOperatingArea: document.getElementById('business-operating-area-edit').value
-                };
-                
-                console.log("البيانات المرسلة للتحديث:", updatedData);
-                
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updatedData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`فشل في حفظ التعديلات: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.status === "error") {
-                    throw new Error(result.message);
-                }
-                
-                showSuccess("تم حفظ التعديلات بنجاح");
-                
-                setTimeout(() => {
-                    fetchData(currentBarcode);
-                }, 1500);
-                
-            } catch (error) {
-                console.error("حدث خطأ أثناء حفظ التعديلات:", error);
-                loading.style.display = "none";
-                showError(error.message || "حدث خطأ أثناء حفظ التعديلات");
-            }
-        });
-        
+
         function showError(message) {
-            errorMsg.innerHTML = message;
+            errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
-        
-        function showSuccess(message) {
-            successMsg.textContent = message;
-            successMsg.style.display = "block";
-            loading.style.display = "none";
-        }
-        
-        // السماح بالبحث عند الضغط على Enter
-        barcodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchBtn.click();
-            }
-        });
     </script>
 </body>
 </html>
