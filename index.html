@@ -216,7 +216,13 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwdfGvAR-svoxA2IQ9kC7mm3c6au0zATbO0B55FPbT56NNDUtVhD9EkOqDxw_11zIIK/exec";
+        // تم استخدام تقنية التشفير البسيط لإخفاء رابط API
+        const API_ENCODED = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3ZGZHdkFSLXN2b3hBMklROWtDN21tM2M2YXUwekFUYk8wQjU1RlBiVDU2Tk5EVXRWaEQ5RWtPcUR4d18xMXpJSUsvZXhlYw==";
+        const API_URL = atob(API_ENCODED);
+        
+        // متغير للتحكم في معدل تحديث المسح
+        let scanInterval = null;
+        const SCAN_INTERVAL_DELAY = 500; // 500 مللي ثانية بين كل مسح
         
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -239,13 +245,14 @@
                     video: { facingMode: "environment" }
                 });
                 video.srcObject = stream;
-                video.play();
+                await video.play();
                 
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 scanning = true;
                 
-                scanQRCode();
+                // بدء المسح بفاصل زمني محدد
+                scanInterval = setInterval(scanQRCode, SCAN_INTERVAL_DELAY);
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
             }
@@ -253,25 +260,54 @@
         
         // إيقاف المسح
         stopBtn.addEventListener('click', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            video.srcObject = null;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            scanning = false;
+            stopScanning();
         });
         
         // البحث يدوياً
         searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
             if (barcode) {
-                fetchData(barcode);
+                if(validateInput(barcode)) {
+                    fetchData(barcode);
+                } else {
+                    showError("الرجاء إدخال باركود صحيح (أحرف وأرقام فقط)");
+                }
             } else {
-                showError("الرجاء إدخال باركود صحيح");
+                showError("الرجاء إدخال باركود");
             }
         });
+        
+        // السماح بإدخال البحث بالضغط على Enter
+        barcodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+        
+        // إيقاف المسح وتنظيف الموارد
+        function stopScanning() {
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            video.srcObject = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            scanning = false;
+        }
+        
+        // التحقق من صحة المدخلات
+        function validateInput(input) {
+            // فقط أحرف وأرقام وشرطة سفلية وشرطة
+            const regex = /^[a-zA-Z0-9_-]+$/;
+            return regex.test(input);
+        }
         
         // مسح QR Code
         function scanQRCode() {
@@ -286,12 +322,14 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
-                    stopBtn.click();
-                    fetchData(code.data);
+                    stopScanning();
+                    if(validateInput(code.data)) {
+                        fetchData(code.data);
+                    } else {
+                        showError("تم مسح باركود غير صالح");
+                    }
                 }
             }
-            
-            requestAnimationFrame(scanQRCode);
         }
         
         // جلب البيانات من Google Sheets
@@ -301,7 +339,14 @@
                 errorMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+                // إضافة طابع زمني لتفادي التخزين المؤقت
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}&t=${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`خطأ في الشبكة: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 loading.style.display = "none";
@@ -310,22 +355,19 @@
                     throw new Error(data.message);
                 }
                 
-                // تعبئة البيانات
-                document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
-                document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
-                document.getElementById('description').textContent = data["Description"] || "-";
-                document.getElementById('category-desc').textContent = data["Category Description"] || "-";
-                document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
-                document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
-                document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
-                document.getElementById('business-line').textContent = data["Business Line"] || "-";
-                document.getElementById('city').textContent = data["City"] || "-";
-                document.getElementById('ss').textContent = data["S/s"] || "-";
-                document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
-                document.getElementById('object-type').textContent = data["Object Type"] || "-";
-                document.getElementById('location').textContent = data["Location"] || "-";
-                document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
-                document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
+                // تعبئة البيانات مع التحقق من وجودها
+                const fields = [
+                    'functional-loc', 'covering-area', 'description', 
+                    'category-desc', 'inspection-date', 'testing-date',
+                    'operating-area', 'business-line', 'city', 'ss',
+                    'serial-number', 'object-type', 'location',
+                    'owning-dept', 'business-operating-area'
+                ];
+                
+                fields.forEach(field => {
+                    const value = data[field.replace('-', ' ')] || "-";
+                    document.getElementById(field).textContent = value;
+                });
                 
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
@@ -333,6 +375,7 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                console.error("Error fetching data:", error);
             }
         }
         
@@ -340,6 +383,11 @@
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
+        
+        // تنظيف الموارد عند إغلاق الصفحة
+        window.addEventListener('beforeunload', () => {
+            stopScanning();
+        });
     </script>
 </body>
 </html>
