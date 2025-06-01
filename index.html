@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>شركة جيزة العربية للأنظمة | نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -340,6 +342,11 @@
             color: white;
         }
         
+        .btn-info {
+            background: linear-gradient(to right, #00b4db, #0083b0);
+            color: white;
+        }
+        
         /* Manual Input */
         .manual-input {
             background: #eef2f7;
@@ -388,6 +395,7 @@
             display: none;
             max-height: 70vh;
             overflow-y: auto;
+            position: relative;
         }
         
         .result-header {
@@ -419,6 +427,7 @@
             border: 2px dashed #1e3799;
             word-break: break-all;
             max-width: 100%;
+            margin-bottom: 15px;
         }
         
         .product-grid {
@@ -455,6 +464,50 @@
             min-height: 24px;
             color: #333;
             word-break: break-word;
+        }
+        
+        /* Export Controls */
+        .export-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .export-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .export-pdf {
+            background: linear-gradient(to right, #e53935, #e35d5b);
+            color: white;
+        }
+        
+        .export-share {
+            background: linear-gradient(to right, #43a047, #2e7d32);
+            color: white;
         }
         
         /* Messages */
@@ -659,6 +712,10 @@
                 font-size: 1.05rem;
                 padding: 13px 25px;
             }
+            
+            .export-controls {
+                justify-content: center;
+            }
         }
         
         @media (min-width: 992px) {
@@ -726,6 +783,12 @@
                 padding: 10px 15px;
             }
             
+            .export-btn {
+                min-width: 100%;
+                font-size: 0.95rem;
+                padding: 10px 15px;
+            }
+            
             .result-header h2 {
                 font-size: 1.2rem;
             }
@@ -768,7 +831,6 @@
         
         <div class="login-footer">
             <p>جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة</p>
-          
         </div>
     </div>
     
@@ -842,6 +904,14 @@
                     <div class="result-header">
                         <h2>بيانات العنصر</h2>
                         <div class="barcode-display" id="current-barcode">-</div>
+                        <div class="export-controls" id="export-controls">
+                            <button class="export-btn export-pdf" id="export-pdf">
+                                <i class="fas fa-file-pdf"></i> تصدير إلى PDF
+                            </button>
+                            <button class="export-btn export-share" id="export-share">
+                                <i class="fas fa-share-alt"></i> مشاركة النتيجة
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="product-grid">
@@ -926,7 +996,6 @@
         
         <div class="footer">
             <p>جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة</p>
-           
         </div>
     </div>
 
@@ -952,12 +1021,15 @@
         const loggedInUser = document.getElementById('logged-in-user');
         const userRole = document.getElementById('user-role');
         const logoutBtn = document.getElementById('logout-btn');
+        const exportPdfBtn = document.getElementById('export-pdf');
+        const exportShareBtn = document.getElementById('export-share');
         
         // متغيرات النظام
         let stream = null;
         let scanning = false;
         let currentBarcode = '';
         let currentUser = null;
+        let currentData = null;
         
         // بيانات المستخدمين المسموح لهم بالدخول
         const users = [
@@ -1149,6 +1221,7 @@
                 
                 // حفظ الباركود الحالي
                 currentBarcode = barcode;
+                currentData = data;
                 
                 // تعبئة البيانات في واجهة المستخدم
                 fillData(data);
@@ -1185,6 +1258,141 @@
             document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
             document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
         }
+        
+        // تصدير البيانات إلى PDF
+        exportPdfBtn.addEventListener('click', () => {
+            if (!currentData) {
+                showError("لا توجد بيانات متاحة للتصدير");
+                return;
+            }
+            
+            // إنشاء مستند PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // إعداد العنوان
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold");
+            doc.text("تقرير بيانات العنصر", 105, 15, null, null, 'center');
+            
+            doc.setFontSize(12);
+            doc.text(`الباركود: ${currentBarcode}`, 105, 25, null, null, 'center');
+            doc.text(`تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}`, 105, 30, null, null, 'center');
+            doc.text(`المستخدم: ${currentUser.name}`, 105, 35, null, null, 'center');
+            
+            // إعداد بيانات الجدول
+            const fields = [
+                { label: "الموقع الوظيفي", value: currentData["Functional Loc."] || "-" },
+                { label: "منطقة التغطية", value: currentData["Covering Area"] || "-" },
+                { label: "الوصف", value: currentData["Description"] || "-" },
+                { label: "وصف الفئة", value: currentData["Category Description"] || "-" },
+                { label: "تاريخ آخر تفتيش", value: currentData["Last Inspection Date"] || "-" },
+                { label: "تاريخ آخر اختبار", value: currentData["Last Testing Date"] || "-" },
+                { label: "منطقة التشغيل", value: currentData["Operating Area"] || "-" },
+                { label: "خط الأعمال", value: currentData["Business Line"] || "-" },
+                { label: "المدينة", value: currentData["City"] || "-" },
+                { label: "S/s", value: currentData["S/s"] || "-" },
+                { label: "الرقم التسلسلي", value: currentData["Serial Number"] || "-" },
+                { label: "نوع الكائن", value: currentData["Object Type"] || "-" },
+                { label: "الموقع", value: currentData["Location"] || "-" },
+                { label: "القسم المالك", value: currentData["Owning Dept."] || "-" },
+                { label: "منطقة الأعمال+التشغيل", value: currentData["Business+Operating Area"] || "-" }
+            ];
+            
+            // إضافة البيانات إلى ملف PDF
+            let yPos = 45;
+            fields.forEach((field, index) => {
+                if (yPos > 280) {
+                    doc.addPage();
+                    yPos = 15;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text(`${field.label}:`, 20, yPos);
+                
+                doc.setFont("helvetica", "normal");
+                doc.text(field.value, 190, yPos, { align: 'right' });
+                
+                yPos += 8;
+            });
+            
+            // إضافة تذييل
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
+            
+            // حفظ الملف
+            const fileName = `تقرير_${currentBarcode}_${new Date().toISOString().slice(0, 10)}.pdf`;
+            doc.save(fileName);
+            
+            showSuccess(`تم تصدير التقرير بنجاح: ${fileName}`);
+        });
+        
+        // مشاركة البيانات
+        exportShareBtn.addEventListener('click', async () => {
+            if (!currentData) {
+                showError("لا توجد بيانات متاحة للمشاركة");
+                return;
+            }
+            
+            try {
+                // إنشاء رابط تنزيل مؤقت
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("ملخص بيانات العنصر", 105, 15, null, null, 'center');
+                
+                doc.setFontSize(10);
+                doc.text(`الباركود: ${currentBarcode}`, 105, 25, null, null, 'center');
+                
+                // إعداد بيانات الجدول
+                const fields = [
+                    { label: "الموقع الوظيفي", value: currentData["Functional Loc."] || "-" },
+                    { label: "الوصف", value: currentData["Description"] || "-" },
+                    { label: "تاريخ آخر تفتيش", value: currentData["Last Inspection Date"] || "-" },
+                    { label: "الموقع", value: currentData["Location"] || "-" }
+                ];
+                
+                // إضافة البيانات إلى ملف PDF
+                let yPos = 35;
+                fields.forEach((field, index) => {
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`${field.label}:`, 20, yPos);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.text(field.value, 190, yPos, { align: 'right' });
+                    
+                    yPos += 8;
+                });
+                
+                // إضافة تذييل
+                doc.setFontSize(8);
+                doc.setTextColor(100);
+                doc.text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
+                
+                // إنشاء ملف PDF كـ Blob
+                const pdfBlob = doc.output('blob');
+                
+                // مشاركة الملف
+                if (navigator.share) {
+                    await navigator.share({
+                        title: `تقرير بيانات العنصر - ${currentBarcode}`,
+                        text: `بيانات العنصر ذو الباركود ${currentBarcode}`,
+                        files: [new File([pdfBlob], `تقرير_${currentBarcode}.pdf`, { type: 'application/pdf' })]
+                    });
+                    showSuccess("تمت مشاركة التقرير بنجاح");
+                } else {
+                    // إذا كان المتصفح لا يدعم Web Share API
+                    showSuccess("تم إنشاء ملف PDF، يمكنك الآن مشاركته يدوياً");
+                }
+            } catch (err) {
+                showError("حدث خطأ أثناء مشاركة التقرير: " + err.message);
+            }
+        });
         
         // تبديل الوضع الليلي
         themeToggle.addEventListener('click', () => {
