@@ -6,6 +6,7 @@
     <title>شركة جيزة العربية للأنظمة | نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js "></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
     <style>
         * {
@@ -108,7 +109,6 @@
             color: #666;
             font-size: 0.9rem;
         }
-
         /* Main Container Styles */
         .container {
             width: 100%;
@@ -120,7 +120,6 @@
             margin: 10px;
             display: none; /* Initially hidden */
         }
-
         /* Header Styles */
         .header {
             background: linear-gradient(90deg, #0c2461, #1e3799);
@@ -148,8 +147,6 @@
             color: #f6b93b;
             letter-spacing: 0.3px;
         }
-
-        /* User Info */
         .user-info {
             display: flex;
             align-items: center;
@@ -192,19 +189,16 @@
             background: rgba(231, 76, 60, 0.6);
             transform: scale(1.1);
         }
-
         /* Main Content */
         .main-content {
             display: flex;
             flex-direction: column;
             padding: 15px;
         }
-
         .scanner-section, .data-section {
             width: 100%;
             padding: 15px;
         }
-
         .section-title {
             font-size: 1.4rem;
             color: #0c2461;
@@ -214,7 +208,6 @@
             text-align: center;
             font-weight: 600;
         }
-
         /* Scanner Styles */
         #scanner-container {
             width: 100%;
@@ -259,7 +252,6 @@
             0% { top: 0; }
             100% { top: 100%; }
         }
-
         /* Controls */
         .controls {
             display: flex;
@@ -308,7 +300,10 @@
             background: linear-gradient(to right, #38ada9, #079992);
             color: white;
         }
-
+        .btn-info {
+            background: linear-gradient(to right, #00b4db, #0083b0);
+            color: white;
+        }
         /* Manual Input */
         .manual-input {
             background: #eef2f7;
@@ -324,7 +319,24 @@
             margin-bottom: 15px;
             text-align: center;
         }
-
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #barcode-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #d1d8e0;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+        #barcode-input:focus {
+            border-color: #1e3799;
+            box-shadow: 0 0 0 3px rgba(30, 55, 153, 0.2);
+        }
         /* Result Section */
         #result {
             background: white;
@@ -335,6 +347,7 @@
             display: none;
             max-height: 70vh;
             overflow-y: auto;
+            position: relative;
         }
         .result-header {
             text-align: center;
@@ -365,7 +378,6 @@
             max-width: 100%;
             margin-bottom: 15px;
         }
-
         .product-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -397,7 +409,6 @@
             color: #333;
             word-break: break-word;
         }
-
         /* Export Controls */
         .export-controls {
             display: flex;
@@ -436,7 +447,6 @@
             background: linear-gradient(to right, #43a047, #2e7d32);
             color: white;
         }
-
         /* Messages */
         #loading {
             display: none;
@@ -478,7 +488,6 @@
             color: #218c74;
             border: 2px solid rgba(46, 213, 115, 0.3);
         }
-
         /* Footer */
         .footer {
             text-align: center;
@@ -490,8 +499,7 @@
         .footer p {
             margin: 4px 0;
         }
-
-        /* Theme Toggle */
+        /* Dark mode toggle */
         .theme-toggle {
             position: absolute;
             top: 15px;
@@ -509,8 +517,7 @@
             font-size: 1.2rem;
             z-index: 100;
         }
-
-        /* Dark Mode */
+        /* Dark mode styles */
         body.dark-mode {
             background: linear-gradient(135deg, #0d1930, #3a0e0e, #0d1930);
             color: #e0e0e0;
@@ -552,7 +559,25 @@
             color: #8ab4f8;
             border-color: #8ab4f8;
         }
-
+        .dark-mode .btn {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        .dark-mode .login-container {
+            background: rgba(30, 30, 40, 0.95);
+            color: #e0e0e0;
+        }
+        .dark-mode .input-group label {
+            color: #8ab4f8;
+        }
+        .dark-mode .input-group input {
+            background: #252535;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        .dark-mode .input-group input:focus {
+            border-color: #8ab4f8;
+            box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.2);
+        }
         /* Responsive Design */
         @media (min-width: 768px) {
             .login-container {
@@ -590,6 +615,9 @@
                 font-size: 1.05rem;
                 padding: 13px 25px;
             }
+            .export-controls {
+                justify-content: center;
+            }
         }
         @media (min-width: 992px) {
             .container {
@@ -612,6 +640,15 @@
             .header {
                 padding: 15px 10px;
                 flex-direction: column;
+                gap: 15px;
+            }
+            .header-info {
+                order: 1;
+            }
+            .user-info {
+                order: 2;
+                min-width: 100%;
+                justify-content: center;
             }
             .header h1 {
                 font-size: 1.4rem;
@@ -633,11 +670,20 @@
                 font-size: 0.95rem;
                 padding: 10px 15px;
             }
+            .export-btn {
+                min-width: 100%;
+                font-size: 0.95rem;
+                padding: 10px 15px;
+            }
             .result-header h2 {
                 font-size: 1.2rem;
             }
             .login-container {
                 padding: 20px;
+            }
+            .login-logo {
+                width: 100px;
+                height: 100px;
             }
         }
     </style>
@@ -663,11 +709,10 @@
             </button>
         </form>
         <div class="login-footer">
-            <p>جميع الحقوق محفوظة © <span id="footer-year">2025</span> شركة جيزة العربية للأنظمة</p>
+            <p>جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة</p>
         </div>
     </div>
-
-    <!-- Main Content -->
+    <!-- Main Content (Hidden until login) -->
     <div class="container" id="main-container">
         <button class="theme-toggle" id="theme-toggle">
             <i class="fas fa-moon"></i>
@@ -802,14 +847,13 @@
             </div>
         </div>
         <div class="footer">
-            <p>جميع الحقوق محفوظة © <span id="footer-year-main">2025</span> شركة جيزة العربية للأنظمة</p>
+            <p>جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة</p>
         </div>
     </div>
-
     <script>
         // API URL - يجب تحديث هذا الرابط ليشير إلى سكريبت جوجل شيت الخاص بك
-        const API_URL = "https://script.google.com/macros/s/AKfycbwLcXNTE5Paidmg4Wxj-N4xopkCrW4Rj5pk5HJEt6rKsgLKoEmz089vVrFwmiRiJejL/exec";
-
+        const API_URL = "https://script.google.com/macros/s/AKfycbwj8Khdz4R3yl_oqfAtUdv5TFLaS1V8WJGMBKvOSfE3tjljKlQEprGlFaykaMaCtxaS/exec";
+        
         // عناصر واجهة المستخدم
         const video = document.getElementById('video');
         const startBtn = document.getElementById('start-btn');
@@ -822,7 +866,6 @@
         const resultDiv = document.getElementById('result');
         const themeToggle = document.getElementById('theme-toggle');
         const currentBarcodeDisplay = document.getElementById('current-barcode');
-
         const loginScreen = document.getElementById('login-screen');
         const mainContainer = document.getElementById('main-container');
         const loginForm = document.getElementById('login-form');
@@ -831,41 +874,18 @@
         const logoutBtn = document.getElementById('logout-btn');
         const exportPdfBtn = document.getElementById('export-pdf');
         const exportShareBtn = document.getElementById('export-share');
-
+        
+        // متغيرات النظام
         let stream = null;
         let scanning = false;
         let currentBarcode = '';
         let currentUser = null;
         let currentData = null;
-
-        // بيانات المستخدمين المسموح لهم بالدخول
-        const users = [
-            {
-                username: "admin",
-                password: "admin123",
-                name: "المدير العام",
-                role: "مدير النظام"
-            },
-            {
-                username: "tech",
-                password: "tech456",
-                name: "فني الصيانة",
-                role: "فني"
-            },
-            {
-                username: "operator",
-                password: "operator789",
-                name: "مشرف التشغيل",
-                role: "مشرف"
-            },
-            {
-                username: "auditor",
-                password: "auditor000",
-                name: "مدقق الجودة",
-                role: "مدقق"
-            }
-        ];
-
+        
+        // API URL - يجب تحديث هذا الرابط ليشير إلى سكريبت جوجل شيت الخاص بك
+        const LOGIN_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec ";
+        
+        // عند تحميل الصفحة، التحقق من وجود مستخدم مسجل مسبقًا
         window.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
@@ -880,12 +900,14 @@
                 showLoginScreen();
             }
         });
-
+        
+        // إظهار شاشة تسجيل الدخول
         function showLoginScreen() {
             loginScreen.style.display = "flex";
             mainContainer.style.display = "none";
         }
-
+        
+        // إظهار الشاشة الرئيسية
         function showMainScreen() {
             if (currentUser) {
                 loggedInUser.textContent = currentUser.name;
@@ -897,22 +919,41 @@
                 showLoginScreen();
             }
         }
-
+        
         // تسجيل الدخول
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const user = users.find(u => u.username === username && u.password === password);
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                showMainScreen();
-            } else {
-                showError("اسم المستخدم أو كلمة المرور غير صحيحة");
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+        
+            try {
+                const response = await fetch(LOGIN_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "login", username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    // حفظ بيانات المستخدم في localStorage
+                    const user = {
+                        username: data.user.username,
+                        name: data.user.name,
+                        role: data.user.role,
+                        permissions: data.user.permissions
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    currentUser = user;
+                    showMainScreen();
+                } else {
+                    showError(data.message || "حدث خطأ أثناء تسجيل الدخول");
+                }
+            } catch (err) {
+                showError("تعذر الاتصال بالخادم: " + err.message);
             }
         });
-
+        
         // تسجيل الخروج
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('currentUser');
@@ -921,26 +962,36 @@
             document.getElementById('password').value = "";
             showLoginScreen();
         });
-
+        
         // بدء عملية المسح
         startBtn.addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                // طلب إذن الوصول إلى الكاميرا
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" }
+                });
                 video.srcObject = stream;
                 video.play();
+                
+                // تحديث حالة الأزرار
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 scanning = true;
+                
+                // إخفاء الرسائل السابقة
                 hideMessages();
+                
+                // بدء عملية مسح الرمز
                 scanQRCode();
             } catch (err) {
                 showError("تعذر الوصول إلى الكاميرا: " + err.message);
             }
         });
-
-        // إيقاف المسح
+        
+        // إيقاف عملية المسح
         stopBtn.addEventListener('click', () => {
             if (stream) {
+                // إيقاف جميع تدفقات الكاميرا
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
@@ -949,18 +1000,18 @@
             stopBtn.disabled = true;
             scanning = false;
         });
-
-        // البحث يدويًا باستخدام الباركود
+        
+        // البحث يدوياً باستخدام الباركود
         searchBtn.addEventListener('click', () => {
             const barcode = barcodeInput.value.trim();
             if (barcode) {
                 fetchData(barcode);
             } else {
-                showError("الرجاء إدخال رمز صحيح");
+                showError("الرجاء إدخال باركود صحيح");
             }
         });
-
-        // مسح QR Code
+        
+        // عملية مسح الرمز QR
         function scanQRCode() {
             if (!scanning) return;
             const canvas = document.createElement('canvas');
@@ -978,31 +1029,48 @@
             }
             requestAnimationFrame(scanQRCode);
         }
-
-        // جلب البيانات
+        
+        // جلب البيانات من Google Sheets
         async function fetchData(barcode) {
             try {
+                // عرض مؤشر التحميل وإخفاء الرسائل
                 loading.style.display = "flex";
                 hideMessages();
                 resultDiv.style.display = "none";
+                
+                // إرسال طلب لجلب البيانات
                 const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
                 const data = await response.json();
+                
+                // إخفاء مؤشر التحميل
                 loading.style.display = "none";
-                if (data.status === "error") throw new Error(data.message);
+                
+                // التحقق من وجود خطأ في الاستجابة
+                if (data.status === "error") {
+                    throw new Error(data.message);
+                }
+                
+                // حفظ الباركود الحالي
                 currentBarcode = barcode;
                 currentData = data;
+                
+                // تعبئة البيانات في واجهة المستخدم
                 fillData(data);
+                
+                // عرض النتيجة
                 resultDiv.style.display = "block";
                 barcodeInput.value = "";
                 currentBarcodeDisplay.textContent = currentBarcode;
+                
+                // التمرير إلى أعلى الصفحة لعرض النتائج
                 resultDiv.scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
             }
         }
-
-        // تعبئة البيانات
+        
+        // تعبئة البيانات في النموذج
         function fillData(data) {
             document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
             document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
@@ -1020,24 +1088,28 @@
             document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
             document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
         }
-
+        
         // تصدير البيانات إلى PDF
         exportPdfBtn.addEventListener('click', () => {
             if (!currentData) {
                 showError("لا توجد بيانات متاحة للتصدير");
                 return;
             }
+            
+            // إنشاء مستند PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const shareDate = new Date().toLocaleDateString('ar-EG');
-            const fileName = `تقرير_${currentBarcode}_${new Date().toISOString().slice(0, 10)}.pdf`;
-
-            doc.setFontSize(18).setFont("helvetica", "bold").text("تقرير بيانات العنصر", 105, 15, null, null, 'center');
-            doc.setFontSize(12).setFont("helvetica", "normal")
-                .text(`الباركود: ${currentBarcode}`, 105, 25, null, null, 'center')
-                .text(`تاريخ التصدير: ${shareDate}`, 105, 30, null, null, 'center')
-                .text(`المستخدم: ${currentUser.name}`, 105, 35, null, null, 'center');
-
+            
+            // إعداد العنوان
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold");
+            doc.text("تقرير بيانات العنصر", 105, 15, null, null, 'center');
+            doc.setFontSize(12);
+            doc.text(`الباركود: ${currentBarcode}`, 105, 25, null, null, 'center');
+            doc.text(`تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}`, 105, 30, null, null, 'center');
+            doc.text(`المستخدم: ${currentUser.name}`, 105, 35, null, null, 'center');
+            
+            // إعداد بيانات الجدول
             const fields = [
                 { label: "الموقع الوظيفي", value: currentData["Functional Loc."] || "-" },
                 { label: "منطقة التغطية", value: currentData["Covering Area"] || "-" },
@@ -1055,26 +1127,33 @@
                 { label: "القسم المالك", value: currentData["Owning Dept."] || "-" },
                 { label: "منطقة الأعمال+التشغيل", value: currentData["Business+Operating Area"] || "-" }
             ];
-
+            
+            // إضافة البيانات إلى ملف PDF
             let yPos = 45;
             fields.forEach((field, index) => {
                 if (yPos > 280) {
                     doc.addPage();
                     yPos = 15;
                 }
-                doc.setFontSize(12).setFont("helvetica", "bold").text(`${field.label}:`, 20, yPos);
-                doc.setFont("helvetica", "normal").text(field.value, 190, yPos, { align: 'right' });
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text(`${field.label}:`, 20, yPos);
+                doc.setFont("helvetica", "normal");
+                doc.text(field.value, 190, yPos, { align: 'right' });
                 yPos += 8;
             });
-
-            doc.setFontSize(10).setTextColor(100)
-                .text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center')
-                .text(`تم التصدير في: ${shareDate}`, 105, 300, null, null, 'center');
-
+            
+            // إضافة تذييل
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
+            
+            // حفظ الملف
+            const fileName = `تقرير_${currentBarcode}_${new Date().toISOString().slice(0, 10)}.pdf`;
             doc.save(fileName);
             showSuccess(`تم تصدير التقرير بنجاح: ${fileName}`);
         });
-
+        
         // مشاركة البيانات
         exportShareBtn.addEventListener('click', async () => {
             if (!currentData) {
@@ -1082,81 +1161,101 @@
                 return;
             }
             try {
+                // إنشاء رابط تنزيل مؤقت
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                doc.setFontSize(14).setFont("helvetica", "bold").text("ملخص بيانات العنصر", 105, 15, null, null, 'center');
-                doc.setFontSize(10).text(`الباركود: ${currentBarcode}`, 105, 25, null, null, 'center');
-
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("ملخص بيانات العنصر", 105, 15, null, null, 'center');
+                doc.setFontSize(10);
+                doc.text(`الباركود: ${currentBarcode}`, 105, 25, null, null, 'center');
+                
+                // إعداد بيانات الجدول
                 const fields = [
                     { label: "الموقع الوظيفي", value: currentData["Functional Loc."] || "-" },
                     { label: "الوصف", value: currentData["Description"] || "-" },
                     { label: "تاريخ آخر تفتيش", value: currentData["Last Inspection Date"] || "-" },
                     { label: "الموقع", value: currentData["Location"] || "-" }
                 ];
-
+                
+                // إضافة البيانات إلى ملف PDF
                 let yPos = 35;
-                fields.forEach((field) => {
-                    doc.setFontSize(10).setFont("helvetica", "bold").text(`${field.label}:`, 20, yPos);
-                    doc.setFont("helvetica", "normal").text(field.value, 190, yPos, { align: 'right' });
+                fields.forEach((field, index) => {
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`${field.label}:`, 20, yPos);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(field.value, 190, yPos, { align: 'right' });
                     yPos += 8;
                 });
-
-                doc.setFontSize(8).setTextColor(100)
-                    .text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
-
+                
+                // إضافة تذييل
+                doc.setFontSize(8);
+                doc.setTextColor(100);
+                doc.text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
+                
+                // إنشاء ملف PDF كـ Blob
                 const pdfBlob = doc.output('blob');
-                const file = new File([pdfBlob], `تقرير_${currentBarcode}.pdf`, { type: 'application/pdf' });
-
+                
+                // مشاركة الملف
                 if (navigator.share) {
                     await navigator.share({
                         title: `تقرير بيانات العنصر - ${currentBarcode}`,
                         text: `بيانات العنصر ذو الباركود ${currentBarcode}`,
-                        files: [file]
+                        files: [new File([pdfBlob], `تقرير_${currentBarcode}.pdf`, { type: 'application/pdf' })]
                     });
                     showSuccess("تمت مشاركة التقرير بنجاح");
                 } else {
-                    showSuccess("تم إنشاء ملف PDF، يمكنك مشاركته يدويًا");
+                    // إذا كان المتصفح لا يدعم Web Share API
+                    showSuccess("تم إنشاء ملف PDF، يمكنك الآن مشاركته يدوياً");
                 }
             } catch (err) {
                 showError("حدث خطأ أثناء مشاركة التقرير: " + err.message);
             }
         });
-
+        
         // تبديل الوضع الليلي
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const icon = themeToggle.querySelector('i');
-            icon.classList.toggle('fa-sun');
-            icon.classList.toggle('fa-moon');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
         });
-
-        // رسائل الخطأ والنجاح
+        
+        // عرض رسالة خطأ
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
+        
+        // عرض رسالة نجاح
         function showSuccess(message) {
             successMsg.textContent = message;
             successMsg.style.display = "block";
+            
+            // إخفاء الرسالة بعد 5 ثوانٍ
             setTimeout(() => {
                 successMsg.style.display = "none";
             }, 5000);
         }
+        
+        // إخفاء جميع الرسائل
         function hideMessages() {
             errorMsg.style.display = "none";
             successMsg.style.display = "none";
         }
-
+        
         // تمكين الإدخال اليدوي عند الضغط على Enter
         barcodeInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 searchBtn.click();
             }
         });
-
-        // تحديث السنة في التذييل
-        document.getElementById("footer-year").innerText = new Date().getFullYear();
-        document.getElementById("footer-year-main").innerText = new Date().getFullYear();
     </script>
 </body>
 </html>
