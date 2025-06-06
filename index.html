@@ -217,7 +217,6 @@
             border: 2px solid #0c2461;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             aspect-ratio: 1/1;
         }
         #video {
@@ -540,19 +539,17 @@
             background: #252535;
             border-color: #444;
         }
-        .dark-mode #result {
-            background: #1e1e2e;
-            border-color: #333;
-        }
-        .dark-mode .product-field {
-            background: #252535;
-            border-left-color: #8ab4f8;
-        }
-        .dark-mode .field-label {
+        .dark-mode .input-group label {
             color: #8ab4f8;
         }
-        .dark-mode .field-value {
+        .dark-mode .input-group input {
+            background: #252535;
+            border-color: #444;
             color: #e0e0e0;
+        }
+        .dark-mode .input-group input:focus {
+            border-color: #8ab4f8;
+            box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.2);
         }
         .dark-mode .barcode-display {
             background: #252535;
@@ -565,18 +562,6 @@
         .dark-mode .login-container {
             background: rgba(30, 30, 40, 0.95);
             color: #e0e0e0;
-        }
-        .dark-mode .input-group label {
-            color: #8ab4f8;
-        }
-        .dark-mode .input-group input {
-            background: #252535;
-            border-color: #444;
-            color: #e0e0e0;
-        }
-        .dark-mode .input-group input:focus {
-            border-color: #8ab4f8;
-            box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.2);
         }
         /* Responsive Design */
         @media (min-width: 768px) {
@@ -712,6 +697,7 @@
             <p>جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة</p>
         </div>
     </div>
+    
     <!-- Main Content (Hidden until login) -->
     <div class="container" id="main-container">
         <button class="theme-toggle" id="theme-toggle">
@@ -850,9 +836,10 @@
             <p>جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة</p>
         </div>
     </div>
+
     <script>
         // API URL - يجب تحديث هذا الرابط ليشير إلى سكريبت جوجل شيت الخاص بك
-        const API_URL = "https://script.google.com/macros/s/AKfycbwj8Khdz4R3yl_oqfAtUdv5TFLaS1V8WJGMBKvOSfE3tjljKlQEprGlFaykaMaCtxaS/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycby4CBB8lh_a30ZzpiXb51dQTHbAoOXZEHZb-VPYf7Nte3nrYU6MS_4xuWP0QcDUbaCa/exec ";
         
         // عناصر واجهة المستخدم
         const video = document.getElementById('video');
@@ -881,9 +868,6 @@
         let currentBarcode = '';
         let currentUser = null;
         let currentData = null;
-        
-        // API URL - يجب تحديث هذا الرابط ليشير إلى سكريبت جوجل شيت الخاص بك
-        const LOGIN_URL = "https://script.google.com/macros/s/AKfycbwj8Khdz4R3yl_oqfAtUdv5TFLaS1V8WJGMBKvOSfE3tjljKlQEprGlFaykaMaCtxaS/exec ";
         
         // عند تحميل الصفحة، التحقق من وجود مستخدم مسجل مسبقًا
         window.addEventListener('DOMContentLoaded', () => {
@@ -925,15 +909,33 @@
             e.preventDefault();
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
-        
+            
             try {
-                const response = await fetch(LOGIN_URL, {
+                const response = await fetch(API_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "login", username, password })
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Cache-Control": "no-cache"
+                    },
+                    body: JSON.stringify({ 
+                        action: "login", 
+                        username, 
+                        password 
+                    })
                 });
                 
-                const data = await response.json();
+                // التعامل مع الاستجابة النصية
+                const textResponse = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(textResponse);
+                } catch (parseError) {
+                    showError("فشل في تحليل استجابة الخادم");
+                    console.error("Parse error:", parseError);
+                    console.log("Raw response:", textResponse);
+                    return;
+                }
                 
                 if (data.status === "success") {
                     // حفظ بيانات المستخدم في localStorage
@@ -947,10 +949,11 @@
                     currentUser = user;
                     showMainScreen();
                 } else {
-                    showError(data.message || "حدث خطأ أثناء تسجيل الدخول");
+                    showError(data.message || "اسم المستخدم أو كلمة المرور غير صحيحة");
                 }
             } catch (err) {
                 showError("تعذر الاتصال بالخادم: " + err.message);
+                console.error("Login error details:", err);
             }
         });
         
@@ -1143,7 +1146,7 @@
                 yPos += 8;
             });
             
-            // إضافة تذييل
+            // إضافة التذييل
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
@@ -1189,7 +1192,7 @@
                     yPos += 8;
                 });
                 
-                // إضافة تذييل
+                // إضافة التذييل
                 doc.setFontSize(8);
                 doc.setTextColor(100);
                 doc.text("جميع الحقوق محفوظة © 2025 شركة جيزة العربية للأنظمة", 105, 290, null, null, 'center');
@@ -1204,7 +1207,7 @@
                         text: `بيانات العنصر ذو الباركود ${currentBarcode}`,
                         files: [new File([pdfBlob], `تقرير_${currentBarcode}.pdf`, { type: 'application/pdf' })]
                     });
-                    showSuccess("تمت مشاركة التقرير بنجاح");
+                    showSuccess("تم مشاركة التقرير بنجاح");
                 } else {
                     // إذا كان المتصفح لا يدعم Web Share API
                     showSuccess("تم إنشاء ملف PDF، يمكنك الآن مشاركته يدوياً");
