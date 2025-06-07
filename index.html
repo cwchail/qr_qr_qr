@@ -3,295 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مسح QR Code مع إدارة المستخدمين</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>نظام مسح QR Code</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <style>
-        :root {
-            --primary: #4285F4;
-            --secondary: #34A853;
-            --danger: #EA4335;
-            --warning: #FBBC05;
-            --dark: #202124;
-            --light: #f8f9fa;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
             font-family: 'Tajawal', Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            color: #333;
-            line-height: 1.6;
-            min-height: 100vh;
+            margin: 0;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #f5f5f5;
+            text-align: center;
         }
-        
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
+        .login-container, .scanner-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, #3367d6 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .logo {
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            font-size: 2rem;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 80vh;
-        }
-        
-        .login-container {
-            padding: 40px;
-            max-width: 500px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .login-container h2 {
-            color: var(--primary);
-            margin-bottom: 30px;
-            font-size: 1.8rem;
-            position: relative;
-        }
-        
-        .login-container h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--primary);
-            border-radius: 2px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-            text-align: right;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--dark);
-            font-size: 1.1rem;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e1e5eb;
             border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"], input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 16px;
-            transition: all 0.3s;
         }
-        
-        .form-group input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
-            outline: none;
-        }
-        
-        .btn {
-            background: var(--primary);
+        button {
+            background: #4285F4;
             color: white;
             border: none;
-            padding: 14px 30px;
-            margin: 10px 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: all 0.3s;
-            display: inline-block;
-            text-decoration: none;
-            box-shadow: 0 4px 6px rgba(66, 133, 244, 0.3);
-        }
-        
-        .btn:hover {
-            background: #3367d6;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(66, 133, 244, 0.4);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .btn-success {
-            background: var(--secondary);
-            box-shadow: 0 4px 6px rgba(52, 168, 83, 0.3);
-        }
-        
-        .btn-success:hover {
-            background: #2d924a;
-            box-shadow: 0 6px 12px rgba(52, 168, 83, 0.4);
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-            box-shadow: 0 4px 6px rgba(234, 67, 53, 0.3);
-        }
-        
-        .btn-danger:hover {
-            background: #d33426;
-            box-shadow: 0 6px 12px rgba(234, 67, 53, 0.4);
-        }
-        
-        .user-info {
-            background: var(--light);
-            padding: 15px 25px;
-            border-radius: 10px;
-            margin: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .user-details {
-            display: flex;
-            align-items: center;
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-left: 15px;
-        }
-        
-        .user-text span {
-            display: block;
-        }
-        
-        .user-name {
-            font-weight: bold;
-            color: var(--dark);
-            font-size: 1.1rem;
-        }
-        
-        .user-role {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .role-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        
-        .admin-badge {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .user-badge {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .viewer-badge {
-            background: var(--secondary);
-            color: white;
-        }
-        
-        .main-content {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .scanner-section {
+            padding: 10px 20px;
+            margin: 10px 0;
             width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        
+        .hidden {
+            display: none;
+        }
+        #error-message {
+            color: #EA4335;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(234,67,53,0.1);
+            display: none;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
         #scanner-container {
             width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
             position: relative;
-            border: 2px solid #e1e5eb;
-            border-radius: 10px;
+            border: 2px solid #333;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
         }
-        
         #video {
             width: 100%;
             display: block;
-            background: #000;
         }
-        
         #canvas {
             display: none;
         }
-        
         .scanner-overlay {
             position: absolute;
             top: 0;
@@ -302,832 +81,306 @@
             border: 30px solid rgba(0,0,0,0.4);
             pointer-events: none;
         }
-        
         .scanner-line {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
-            background: var(--danger);
-            box-shadow: 0 0 15px rgba(234,67,53,0.8);
+            height: 3px;
+            background: #EA4335;
+            box-shadow: 0 0 10px rgba(234,67,53,0.7);
             animation: scan 2s infinite linear;
             pointer-events: none;
         }
-        
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
         }
-        
         .controls {
-            margin: 25px 0;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+            margin: 20px 0;
         }
-        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         #manual-input {
             margin: 20px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
         }
-        
-        .input-group {
-            display: flex;
-            width: 100%;
-            max-width: 500px;
-        }
-        
         #barcode-input {
-            flex: 1;
-            padding: 14px 20px;
-            border: 2px solid #e1e5eb;
-            border-radius: 8px 0 0 8px;
+            padding: 10px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             font-size: 16px;
-            transition: all 0.3s;
         }
-        
-        #barcode-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
-            outline: none;
-        }
-        
-        #search-btn {
-            border-radius: 0 8px 8px 0;
-        }
-        
         #result {
             background: white;
-            padding: 30px;
+            padding: 20px;
             margin: 20px auto;
-            width: 100%;
-            max-width: 800px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: right;
             display: none;
         }
-        
-        #result h2 {
-            color: var(--primary);
-            margin-top: 0;
-            margin-bottom: 25px;
-            text-align: center;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f4f8;
-            font-size: 1.6rem;
-        }
-        
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
         .product-field {
-            background: #f9fbfd;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            transition: all 0.3s;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
-        
-        .product-field:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
         .field-label {
             font-weight: bold;
-            color: var(--primary);
+            color: #4285F4;
             display: block;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+            margin-bottom: 5px;
         }
-        
         .field-value {
-            font-size: 1.1rem;
-            color: var(--dark);
+            font-size: 16px;
         }
-        
         #loading {
             display: none;
-            margin: 30px;
-            font-size: 1.2rem;
-            color: var(--primary);
-            text-align: center;
-        }
-        
-        .loading-spinner {
-            border: 5px solid #f0f4f8;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        #error-message {
-            color: var(--danger);
             margin: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background: rgba(234,67,53,0.1);
-            display: none;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .admin-panel {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            margin: 30px auto;
-            width: 100%;
-            max-width: 800px;
-            text-align: right;
-            display: none;
-        }
-        
-        .admin-panel h2 {
-            color: var(--danger);
-            margin-top: 0;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 1.8rem;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f4f8;
-        }
-        
-        .permissions-info {
-            background: #f9fbfd;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        }
-        
-        .permissions-info h3 {
-            color: var(--dark);
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 1.4rem;
-        }
-        
-        .permissions-info ul {
-            text-align: right;
-            padding-right: 20px;
-            list-style-type: none;
-        }
-        
-        .permissions-info li {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #e1e5eb;
-            font-size: 1.1rem;
-        }
-        
-        .permissions-info li:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        
-        .sheet-info {
-            background: #f0f9ff;
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-        }
-        
-        .sheet-info h4 {
-            color: var(--primary);
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
-        
-        .sheet-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 1rem;
-        }
-        
-        .sheet-table th, .sheet-table td {
-            padding: 12px;
-            text-align: right;
-            border: 1px solid #e1e5eb;
-        }
-        
-        .sheet-table th {
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-        }
-        
-        .sheet-table tr:nth-child(even) {
-            background: #f8fafc;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: auto;
-            color: #666;
-            font-size: 0.9rem;
-            border-top: 1px solid #e1e5eb;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                border-radius: 0;
-                box-shadow: none;
-            }
-            
-            .header {
-                padding: 20px 15px;
-            }
-            
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            
-            .login-container {
-                padding: 30px 20px;
-            }
-            
-            .user-info {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
-            
-            #barcode-input {
-                border-radius: 8px;
-                margin-bottom: 10px;
-            }
-            
-            #search-btn {
-                border-radius: 8px;
-            }
-            
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
+            font-size: 18px;
+            color: #4285F4;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="app-container">
-            <div id="login-page">
-                <div class="header">
-                    <div class="logo">QR</div>
-                    <h1>نظام مسح QR Code المتقدم</h1>
-                    <p>مع إدارة المستخدمين والصلاحيات</p>
-                </div>
-                
-                <div class="login-container">
-                    <h2>تسجيل الدخول للنظام</h2>
-                    <div class="form-group">
-                        <label for="username">اسم المستخدم</label>
-                        <input type="text" id="username" placeholder="أدخل اسم المستخدم">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">كلمة المرور</label>
-                        <input type="password" id="password" placeholder="أدخل كلمة المرور">
-                    </div>
-                    <button id="login-btn" class="btn">تسجيل الدخول</button>
-                    <div id="login-error" style="color: var(--danger); margin-top: 25px; padding: 15px; background: rgba(234,67,53,0.1); border-radius: 8px; display: none;"></div>
-                </div>
-                
-                <div class="footer">
-                    <p>© 2023 شركة جيزة العربية للأنظمة. جميع الحقوق محفوظة.</p>
-                </div>
-            </div>
-            
-            <div id="app-page" class="hidden">
-                <div class="header">
-                    <div class="logo">QR</div>
-                    <h1>نظام مسح QR Code المتقدم</h1>
-                    <p>مع إدارة المستخدمين والصلاحيات</p>
-                </div>
-                
-                <div class="user-info">
-                    <div class="user-details">
-                        <div class="user-avatar" id="user-avatar">U</div>
-                        <div class="user-text">
-                            <span class="user-name" id="current-user">مرحبًا، </span>
-                            <span class="user-role" id="user-role">الصلاحية: <span class="role-badge" id="user-role-badge">مستخدم</span></span>
-                        </div>
-                    </div>
-                    <button id="logout-btn" class="btn btn-danger">تسجيل الخروج</button>
-                </div>
-                
-                <div class="main-content">
-                    <div class="scanner-section">
-                        <div id="scanner-container">
-                            <video id="video" playsinline></video>
-                            <canvas id="canvas"></canvas>
-                            <div class="scanner-overlay">
-                                <div class="scanner-line"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="controls">
-                            <button id="start-btn" class="btn">بدء المسح</button>
-                            <button id="stop-btn" class="btn" disabled>إيقاف المسح</button>
-                        </div>
-                        
-                        <div id="manual-input">
-                            <div class="input-group">
-                                <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
-                                <button id="search-btn" class="btn">بحث</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="loading">
-                        <div class="loading-spinner"></div>
-                        <p>جاري جلب البيانات من الخادم...</p>
-                    </div>
-                    
-                    <div id="error-message"></div>
-                    
-                    <div id="result">
-                        <h2>تفاصيل المهمة</h2>
-                        <div class="product-grid">
-                            <div class="product-field">
-                                <span class="field-label">الموقع الوظيفي:</span>
-                                <span class="field-value" id="functional-loc">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">منطقة التغطية:</span>
-                                <span class="field-value" id="covering-area">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">الوصف:</span>
-                                <span class="field-value" id="description">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">وصف الفئة:</span>
-                                <span class="field-value" id="category-desc">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">تاريخ آخر تفتيش:</span>
-                                <span class="field-value" id="inspection-date">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">تاريخ آخر اختبار:</span>
-                                <span class="field-value" id="testing-date">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">منطقة التشغيل:</span>
-                                <span class="field-value" id="operating-area">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">خط الأعمال:</span>
-                                <span class="field-value" id="business-line">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">المدينة:</span>
-                                <span class="field-value" id="city">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">S/s:</span>
-                                <span class="field-value" id="ss">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">الرقم التسلسلي:</span>
-                                <span class="field-value" id="serial-number">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">نوع الكائن:</span>
-                                <span class="field-value" id="object-type">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">الموقع:</span>
-                                <span class="field-value" id="location">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">القسم المالك:</span>
-                                <span class="field-value" id="owning-dept">-</span>
-                            </div>
-                            <div class="product-field">
-                                <span class="field-label">منطقة الأعمال+التشغيل:</span>
-                                <span class="field-value" id="business-operating-area">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="admin-panel" class="admin-panel">
-                        <h2>لوحة تحكم المشرف</h2>
-                        <div class="permissions-info">
-                            <h3>صلاحيات المستخدمين</h3>
-                            <ul>
-                                <li><span class="role-badge admin-badge">مشرف</span> - صلاحيات كاملة على النظام، الوصول لجميع البيانات والإعدادات</li>
-                                <li><span class="role-badge user-badge">مستخدم</span> - صلاحيات المسح الضوئي، إدخال البيانات يدويًا، وعرض البيانات</li>
-                                <li><span class="role-badge viewer-badge">مشاهد</span> - صلاحيات عرض البيانات فقط دون إمكانية المسح أو التعديل</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="sheet-info">
-                            <h4>إعداد جدول المستخدمين في Google Sheets</h4>
-                            <p>لإدارة المستخدمين، قم بإنشاء ورقة باسم "المستخدمين" في نفس ملف Google Sheets مع الأعمدة التالية:</p>
-                            
-                            <table class="sheet-table">
-                                <thead>
-                                    <tr>
-                                        <th>العمود A</th>
-                                        <th>العمود B</th>
-                                        <th>العمود C</th>
-                                        <th>العمود D</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>اسم المستخدم</td>
-                                        <td>كلمة المرور</td>
-                                        <td>الصلاحية</td>
-                                        <td>التوكن</td>
-                                    </tr>
-                                    <tr>
-                                        <td>admin</td>
-                                        <td>admin123</td>
-                                        <td>مشرف</td>
-                                        <td>(يتم توليده تلقائيًا)</td>
-                                    </tr>
-                                    <tr>
-                                        <td>user1</td>
-                                        <td>pass123</td>
-                                        <td>مستخدم</td>
-                                        <td>(يتم توليده تلقائيًا)</td>
-                                    </tr>
-                                    <tr>
-                                        <td>viewer1</td>
-                                        <td>view123</td>
-                                        <td>مشاهد</td>
-                                        <td>(يتم توليده تلقائيًا)</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="footer">
-                    <p>© 2023 شركة جيزة العربية للأنظمة. جميع الحقوق محفوظة. | الإصدار 2.0</p>
-                </div>
-            </div>
+
+<!-- صفحة تسجيل الدخول -->
+<div class="login-container" id="login-page">
+    <h2>تسجيل الدخول</h2>
+    <input type="text" id="username" placeholder="اسم المستخدم">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <div id="error-message"></div>
+    <button onclick="login()">دخول</button>
+</div>
+
+<!-- صفحة مسح QR Code -->
+<div class="scanner-container hidden" id="scanner-page">
+    <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+    <div id="scanner-container">
+        <video id="video" playsinline></video>
+        <canvas id="canvas"></canvas>
+        <div class="scanner-overlay">
+            <div class="scanner-line"></div>
         </div>
     </div>
+    <div class="controls">
+        <button id="start-btn">بدء المسح</button>
+        <button id="stop-btn" disabled>إيقاف المسح</button>
+    </div>
+    <div id="manual-input">
+        <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
+        <button id="search-btn">بحث</button>
+    </div>
+    <div id="loading">جاري جلب البيانات...</div>
+    <div id="error-message"></div>
+    <div id="result">
+        <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+        <div class="product-field">
+            <span class="field-label">الموقع الوظيفي:</span>
+            <span class="field-value" id="functional-loc">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">منطقة التغطية:</span>
+            <span class="field-value" id="covering-area">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">الوصف:</span>
+            <span class="field-value" id="description">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">وصف الفئة:</span>
+            <span class="field-value" id="category-desc">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">تاريخ آخر تفتيش:</span>
+            <span class="field-value" id="inspection-date">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">تاريخ آخر اختبار:</span>
+            <span class="field-value" id="testing-date">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">منطقة التشغيل:</span>
+            <span class="field-value" id="operating-area">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">خط الأعمال:</span>
+            <span class="field-value" id="business-line">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">المدينة:</span>
+            <span class="field-value" id="city">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">S/s:</span>
+            <span class="field-value" id="ss">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">الرقم التسلسلي:</span>
+            <span class="field-value" id="serial-number">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">نوع الكائن:</span>
+            <span class="field-value" id="object-type">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">الموقع:</span>
+            <span class="field-value" id="location">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">القسم المالك:</span>
+            <span class="field-value" id="owning-dept">-</span>
+        </div>
+        <div class="product-field">
+            <span class="field-label">منطقة الأعمال+التشغيل:</span>
+            <span class="field-value" id="business-operating-area">-</span>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // عنوان API - تأكد من تحديثه بعد نشر Google Apps Script
-        const API_URL = "https://script.google.com/macros/s/AKfycbxk_XrZbbTxb1l0qY--cfDGazDb9F2cTDfywxYSEacnbStez-NiPVBW4VWs3Q5oWac3/exec";
-        
-        // عناصر DOM
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const searchBtn = document.getElementById('search-btn');
-        const barcodeInput = document.getElementById('barcode-input');
-        const loading = document.getElementById('loading');
-        const errorMsg = document.getElementById('error-message');
-        const resultDiv = document.getElementById('result');
-        const loginPage = document.getElementById('login-page');
-        const appPage = document.getElementById('app-page');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginError = document.getElementById('login-error');
-        const currentUser = document.getElementById('current-user');
-        const userRoleBadge = document.getElementById('user-role-badge');
-        const userRoleText = document.getElementById('user-role');
-        const adminPanel = document.getElementById('admin-panel');
-        const scannerContainer = document.getElementById('scanner-container');
-        const userAvatar = document.getElementById('user-avatar');
-        
-        // متغيرات النظام
-        let stream = null;
-        let scanning = false;
-        let authToken = null;
-        let userRole = null;
-        let currentUsername = null;
-        
-        // التحقق من وجود جلسة مسجلة
-        function checkSession() {
-            const savedToken = sessionStorage.getItem('qrToken');
-            const savedRole = sessionStorage.getItem('userRole');
-            const savedUser = sessionStorage.getItem('username');
-            
-            if (savedToken && savedRole && savedUser) {
-                authToken = savedToken;
-                userRole = savedRole;
-                currentUsername = savedUser;
-                showApp();
-            }
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyGB7XWCNX3M7Z61V4vdCXe-sFl2rL55-bZ5kue8p83Jf21uQvUod3qOCwzOzZPC7yt/exec";
+
+    function showError(message) {
+        const error = document.getElementById('error-message');
+        error.textContent = message;
+        error.style.display = "block";
+    }
+
+    async function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!username || !password) {
+            showError("الرجاء إدخال اسم المستخدم وكلمة المرور");
+            return;
         }
-        
-        // تسجيل الدخول
-        loginBtn.addEventListener('click', async () => {
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            if (!username || !password) {
-                showLoginError("الرجاء إدخال اسم المستخدم وكلمة المرور");
-                return;
-            }
-            
-            try {
-                // إظهار حالة التحميل
-                loginError.style.display = 'none';
-                loginBtn.disabled = true;
-                loginBtn.textContent = 'جاري تسجيل الدخول...';
-                
-                // إعداد بيانات الطلب
-                const formData = new URLSearchParams();
-                formData.append('username', username);
-                formData.append('password', password);
-                
-                // إرسال طلب تسجيل الدخول
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === "success") {
-                    authToken = result.token;
-                    userRole = result.role;
-                    currentUsername = username;
-                    
-                    // حفظ بيانات الجلسة
-                    sessionStorage.setItem('qrToken', authToken);
-                    sessionStorage.setItem('userRole', userRole);
-                    sessionStorage.setItem('username', username);
-                    
-                    showApp();
-                } else {
-                    showLoginError(result.message || "اسم المستخدم أو كلمة المرور غير صحيحة");
-                }
-            } catch (error) {
-                showLoginError("حدث خطأ في الاتصال بالخادم: " + error.message);
-                console.error("Login error:", error);
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'تسجيل الدخول';
-            }
-        });
-        
-        // تسجيل الخروج
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                // إرسال طلب تسجيل الخروج
-                await fetch(`${API_URL}?token=${authToken}`, {
-                    method: 'DELETE'
-                });
-                
-                // حذف بيانات الجلسة
-                sessionStorage.removeItem('qrToken');
-                sessionStorage.removeItem('userRole');
-                sessionStorage.removeItem('username');
-                
-                // إيقاف الكاميرا إذا كانت تعمل
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                }
-                
-                // العودة إلى صفحة تسجيل الدخول
-                loginPage.style.display = 'block';
-                appPage.classList.add('hidden');
-                scannerContainer.classList.add('hidden');
-                
-                // إعادة تعيين حقول تسجيل الدخول
-                usernameInput.value = '';
-                passwordInput.value = '';
-                loginError.style.display = 'none';
-            } catch (error) {
-                showError("حدث خطأ أثناء تسجيل الخروج");
-                console.error("Logout error:", error);
-            }
-        });
-        
-        // عرض واجهة التطبيق بعد تسجيل الدخول
-        function showApp() {
-            // تحديث معلومات المستخدم
-            currentUser.textContent = `مرحبًا، ${currentUsername}`;
-            userRoleBadge.textContent = userRole;
-            userAvatar.textContent = currentUsername.charAt(0).toUpperCase();
-            
-            // تحديث لون البادج بناءً على الصلاحية
-            userRoleBadge.className = 'role-badge ';
-            if (userRole === 'مشرف') {
-                userRoleBadge.classList.add('admin-badge');
-                adminPanel.style.display = 'block';
-            } else if (userRole === 'مستخدم') {
-                userRoleBadge.classList.add('user-badge');
-                adminPanel.style.display = 'none';
+
+        try {
+            const response = await fetch(API_URL + "?action=login&user=" + encodeURIComponent(username) + "&pass=" + encodeURIComponent(password));
+            const data = await response.json();
+
+            if (data.status === "success") {
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('scanner-page').classList.remove('hidden');
             } else {
-                userRoleBadge.classList.add('viewer-badge');
-                adminPanel.style.display = 'none';
-                
-                // إخفاء عناصر التحكم للمشاهدين
-                scannerContainer.classList.add('hidden');
-                document.querySelector('.controls').style.display = 'none';
-                startBtn.style.display = 'none';
-                stopBtn.style.display = 'none';
+                showError(data.message || "بيانات غير صحيحة");
             }
-            
-            // إظهار واجهة التطبيق
-            loginPage.style.display = 'none';
-            appPage.classList.remove('hidden');
-            scannerContainer.classList.remove('hidden');
-            
-            // إخفاء النتائج السابقة
-            resultDiv.style.display = 'none';
-            errorMsg.style.display = 'none';
+        } catch (e) {
+            showError("حدث خطأ في الاتصال");
         }
-        
-        // بدء المسح
-        startBtn.addEventListener('click', async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" }
-                });
-                video.srcObject = stream;
-                await video.play();
-                
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-                scanning = true;
-                
-                scanQRCode();
-            } catch (err) {
-                showError("تعذر الوصول إلى الكاميرا: " + err.message);
-                console.error("Camera error:", err);
-            }
-        });
-        
-        // إيقاف المسح
-        stopBtn.addEventListener('click', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            video.srcObject = null;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            scanning = false;
-        });
-        
-        // البحث يدوياً
-        searchBtn.addEventListener('click', () => {
-            const barcode = barcodeInput.value.trim();
-            if (barcode) {
-                fetchData(barcode);
-            } else {
-                showError("الرجاء إدخال باركود صحيح");
-            }
-        });
-        
-        // مسح QR Code
-        function scanQRCode() {
-            if (!scanning) return;
-            
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
-                
-                if (code) {
-                    stopBtn.click();
-                    fetchData(code.data);
-                }
-            }
-            
-            requestAnimationFrame(scanQRCode);
-        }
-        
-        // جلب البيانات من Google Sheets
-        async function fetchData(barcode) {
-            try {
-                loading.style.display = "block";
-                errorMsg.style.display = "none";
-                resultDiv.style.display = "none";
-                
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}&token=${authToken}`);
-                const data = await response.json();
-                
-                loading.style.display = "none";
-                
-                if (data.status === "error") {
-                    throw new Error(data.message);
-                }
-                
-                // تعبئة البيانات
-                document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
-                document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
-                document.getElementById('description').textContent = data["Description"] || "-";
-                document.getElementById('category-desc').textContent = data["Category Description"] || "-";
-                document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
-                document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
-                document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
-                document.getElementById('business-line').textContent = data["Business Line"] || "-";
-                document.getElementById('city').textContent = data["City"] || "-";
-                document.getElementById('ss').textContent = data["S/s"] || "-";
-                document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
-                document.getElementById('object-type').textContent = data["Object Type"] || "-";
-                document.getElementById('location').textContent = data["Location"] || "-";
-                document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
-                document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
-                
-                resultDiv.style.display = "block";
-                barcodeInput.value = "";
-                
-            } catch (error) {
-                loading.style.display = "none";
-                showError(error.message || "حدث خطأ أثناء جلب البيانات");
-                console.error("Fetch data error:", error);
-                
-                // إذا كانت الجلسة منتهية، إعادة توجيه لتسجيل الدخول
-                if (error.message.includes("جلسة منتهية") || error.message.includes("يجب تسجيل الدخول")) {
-                    setTimeout(() => logoutBtn.click(), 3000);
-                }
-            }
-        }
-        
-        // عرض رسالة خطأ
-        function showError(message) {
-            errorMsg.innerHTML = `<strong>خطأ:</strong> ${message}`;
-            errorMsg.style.display = "block";
-        }
-        
-        // عرض رسالة خطأ في تسجيل الدخول
-        function showLoginError(message) {
-            loginError.innerHTML = `<strong>خطأ:</strong> ${message}`;
-            loginError.style.display = "block";
-        }
-        
-        // تهيئة التطبيق عند التحميل
-        document.addEventListener('DOMContentLoaded', () => {
-            checkSession();
-            
-            // تمكين إرسال النموذج باستخدام Enter
-            usernameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    loginBtn.click();
-                }
+    }
+
+    // --- نفس كود مسح QR Code ---
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const searchBtn = document.getElementById('search-btn');
+    const barcodeInput = document.getElementById('barcode-input');
+    const loading = document.getElementById('loading');
+    const errorMsg = document.getElementById('error-message');
+    const resultDiv = document.getElementById('result');
+    let stream = null;
+    let scanning = false;
+
+    startBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" }
             });
-            
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    loginBtn.click();
-                }
-            });
-            
-            barcodeInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    searchBtn.click();
-                }
-            });
-        });
-    </script>
+            video.srcObject = stream;
+            video.play();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            scanning = true;
+            scanQRCode();
+        } catch (err) {
+            showError("تعذر الوصول إلى الكاميرا: " + err.message);
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        video.srcObject = null;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        scanning = false;
+    });
+
+    searchBtn.addEventListener('click', () => {
+        const barcode = barcodeInput.value.trim();
+        if (barcode) {
+            fetchData(barcode);
+        } else {
+            showError("الرجاء إدخال باركود صحيح");
+        }
+    });
+
+    function scanQRCode() {
+        if (!scanning) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code) {
+                stopBtn.click();
+                fetchData(code.data);
+            }
+        }
+        requestAnimationFrame(scanQRCode);
+    }
+
+    async function fetchData(barcode) {
+        try {
+            loading.style.display = "block";
+            errorMsg.style.display = "none";
+            resultDiv.style.display = "none";
+            const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+            const data = await response.json();
+            loading.style.display = "none";
+            if (data.status === "error") {
+                throw new Error(data.message);
+            }
+
+            document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
+            document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
+            document.getElementById('description').textContent = data["Description"] || "-";
+            document.getElementById('category-desc').textContent = data["Category Description"] || "-";
+            document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
+            document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
+            document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
+            document.getElementById('business-line').textContent = data["Business Line"] || "-";
+            document.getElementById('city').textContent = data["City"] || "-";
+            document.getElementById('ss').textContent = data["S/s"] || "-";
+            document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
+            document.getElementById('object-type').textContent = data["Object Type"] || "-";
+            document.getElementById('location').textContent = data["Location"] || "-";
+            document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
+            document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
+
+            resultDiv.style.display = "block";
+            barcodeInput.value = "";
+        } catch (error) {
+            loading.style.display = "none";
+            showError(error.message || "حدث خطأ أثناء جلب البيانات");
+        }
+    }
+
+    function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.style.display = "block";
+    }
+</script>
+
 </body>
 </html>
