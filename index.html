@@ -3,74 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مسح QR Code</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
+    <title>نظام مسح QR Code - شركة جيزة العربية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
     <style>
-        body {
-            font-family: 'Tajawal', Arial, sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            background: #f5f5f5;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            min-height: 80vh;
+        }
+        
+        /* تصميم صفحة تسجيل الدخول */
+        .login-container {
+            padding: 40px;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .logo-section {
             text-align: center;
+            margin-bottom: 30px;
         }
-        .login-container, .scanner-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #4285F4, #34A853);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
         }
-        input[type="text"], input[type="password"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        
+        h1 {
+            color: #1a2a6c;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
             font-size: 16px;
         }
-        button {
-            background: #4285F4;
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: #4285F4;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        
+        .login-btn {
+            background: linear-gradient(45deg, #4285F4, #34A853);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
             margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(66, 133, 244, 0.4);
+        }
+        
+        .login-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .error-message {
+            color: #EA4335;
+            text-align: center;
+            margin-top: 15px;
+            min-height: 20px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        /* تصميم صفحة المعلومات */
+        .info-container {
+            width: 50%;
+            background: linear-gradient(135deg, #4285F4, #34A853);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .info-container h2 {
+            font-size: 26px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .features {
+            list-style: none;
+        }
+        
+        .features li {
+            padding: 15px 0;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .features li:last-child {
+            border-bottom: none;
+        }
+        
+        .features li::before {
+            content: "✓";
+            font-weight: bold;
+            font-size: 18px;
+            margin-left: 10px;
+            color: #34A853;
+            background: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+        
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: white;
+        }
+        
+        .qr-section p {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        /* تصميم الصفحة الرئيسية بعد تسجيل الدخول */
+        .scanner-page {
+            display: none;
             width: 100%;
-            font-size: 16px;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #4285F4, #34A853);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            background: #EA4335;
+            color: white;
+            border: none;
+            padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
         }
-        .hidden {
-            display: none;
-        }
-        #error-message {
-            color: #EA4335;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            background: rgba(234,67,53,0.1);
-            display: none;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        #scanner-container {
+        
+        .scanner-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             margin: 20px auto;
             position: relative;
             border: 2px solid #333;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
+        
         #video {
             width: 100%;
             display: block;
         }
-        #canvas {
-            display: none;
-        }
+        
         .scanner-overlay {
             position: absolute;
             top: 0;
@@ -81,6 +285,7 @@
             border: 30px solid rgba(0,0,0,0.4);
             pointer-events: none;
         }
+        
         .scanner-line {
             position: absolute;
             top: 0;
@@ -92,306 +297,612 @@
             animation: scan 2s infinite linear;
             pointer-events: none;
         }
+        
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
         }
+        
         .controls {
             margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
-        #manual-input {
-            margin: 20px 0;
+        
+        .btn {
+            background: #4285F4;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
         }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(66, 133, 244, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-stop {
+            background: #EA4335;
+        }
+        
+        .btn-share {
+            background: #34A853;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .manual-input {
+            margin: 20px auto;
+            max-width: 500px;
+            display: flex;
+            gap: 10px;
+        }
+        
         #barcode-input {
-            padding: 10px;
-            width: 200px;
-            border: 1px solid #ddd;
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
         }
-        #result {
+        
+        .result-container {
             background: white;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 600px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin: 30px auto;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             text-align: right;
             display: none;
         }
-        .product-field {
-            margin-bottom: 15px;
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid #4285F4;
         }
+        
+        .result-header h2 {
+            color: #4285F4;
+            margin: 0;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .product-field {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #4285F4;
+        }
+        
         .field-label {
             font-weight: bold;
-            color: #4285F4;
+            color: #1a2a6c;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 15px;
         }
+        
         .field-value {
             font-size: 16px;
+            color: #333;
         }
-        #loading {
+        
+        .loading {
             display: none;
             margin: 20px;
+            text-align: center;
             font-size: 18px;
             color: #4285F4;
         }
-        #error-message {
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4285F4;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message-container {
             color: #EA4335;
             margin: 15px;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
             background: rgba(234,67,53,0.1);
             display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* تصميم متجاوب */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .login-container, .info-container {
+                width: 100%;
+            }
+            
+            .info-container {
+                order: -1;
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
 <body>
-
-<!-- صفحة تسجيل الدخول -->
-<div class="login-container" id="login-page">
-    <h2>تسجيل الدخول</h2>
-    <input type="text" id="username" placeholder="اسم المستخدم">
-    <input type="password" id="password" placeholder="كلمة المرور">
-    <div id="error-message"></div>
-    <button onclick="login()">دخول</button>
-</div>
-
-<!-- صفحة مسح QR Code -->
-<div class="scanner-container hidden" id="scanner-page">
-    <!-- نسخة من الكود الأصلي -->
-    <div class="container">
-        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
-        <div id="scanner-container">
-            <video id="video" playsinline></video>
-            <canvas id="canvas"></canvas>
-            <div class="scanner-overlay">
-                <div class="scanner-line"></div>
+    <!-- صفحة تسجيل الدخول -->
+    <div class="container" id="loginPage">
+        <div class="login-container">
+            <div class="logo-section">
+                <div class="logo">QR</div>
+                <h1>شركة جيزة العربية للأنظمة</h1>
+                <p class="subtitle">نظام مسح QR Code - تسجيل الدخول</p>
             </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="input-group">
+                    <label for="username">اسم المستخدم</label>
+                    <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+                </div>
+                
+                <button type="submit" class="login-btn">تسجيل الدخول</button>
+                <div class="error-message" id="loginError"></div>
+            </form>
         </div>
-        <div class="controls">
-            <button id="start-btn">بدء المسح</button>
-            <button id="stop-btn" disabled>إيقاف المسح</button>
-        </div>
-        <div id="manual-input">
-            <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
-            <button id="search-btn">بحث</button>
-        </div>
-        <div id="loading">جاري جلب البيانات...</div>
-        <div id="error-message"></div>
-        <div id="result">
-            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
-            <div class="product-field">
-                <span class="field-label">الموقع الوظيفي:</span>
-                <span class="field-value" id="functional-loc">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">منطقة التغطية:</span>
-                <span class="field-value" id="covering-area">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">الوصف:</span>
-                <span class="field-value" id="description">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">وصف الفئة:</span>
-                <span class="field-value" id="category-desc">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">تاريخ آخر تفتيش:</span>
-                <span class="field-value" id="inspection-date">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">تاريخ آخر اختبار:</span>
-                <span class="field-value" id="testing-date">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">منطقة التشغيل:</span>
-                <span class="field-value" id="operating-area">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">خط الأعمال:</span>
-                <span class="field-value" id="business-line">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">المدينة:</span>
-                <span class="field-value" id="city">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">S/s:</span>
-                <span class="field-value" id="ss">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">الرقم التسلسلي:</span>
-                <span class="field-value" id="serial-number">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">نوع الكائن:</span>
-                <span class="field-value" id="object-type">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">الموقع:</span>
-                <span class="field-value" id="location">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">القسم المالك:</span>
-                <span class="field-value" id="owning-dept">-</span>
-            </div>
-            <div class="product-field">
-                <span class="field-label">منطقة الأعمال+التشغيل:</span>
-                <span class="field-value" id="business-operating-area">-</span>
+        
+        <div class="info-container">
+            <h2>مميزات النظام</h2>
+            <ul class="features">
+                <li>مسح رموز QR Code بسرعة ودقة</li>
+                <li>استخراج بيانات المنتجات من قاعدة البيانات</li>
+                <li>تخزين المعلومات في سجلات موثوقة</li>
+                <li>إمكانية البحث يدويًا برقم الباركود</li>
+                <li>مشاركة النتائج مع فريق العمل</li>
+                <li>واجهة مستخدم سهلة ومبسطة</li>
+                <li>يعمل على جميع الأجهزة والأنظمة</li>
+            </ul>
+            
+            <div class="qr-section">
+                <div class="qr-placeholder">
+                    <i>QR</i>
+                </div>
+                <p>قم بمسح رمز QR Code لعرض تفاصيل المنتج</p>
             </div>
         </div>
     </div>
-</div>
+    
+    <!-- صفحة المسح بعد تسجيل الدخول -->
+    <div class="container" id="scannerPage" style="display: none;">
+        <div class="scanner-page">
+            <div class="header">
+                <h1>نظام مسح QR Code</h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName">مستخدم</div>
+                        <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="scanner-container" class="scanner-container">
+                <video id="video" playsinline></video>
+                <div class="scanner-overlay">
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="start-btn" class="btn">بدء المسح</button>
+                <button id="stop-btn" class="btn btn-stop" disabled>إيقاف المسح</button>
+            </div>
+            
+            <div class="manual-input">
+                <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
+                <button id="search-btn" class="btn">بحث</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                جاري جلب البيانات...
+            </div>
+            
+            <div class="error-message-container" id="error-message"></div>
+            
+            <div class="result-container" id="result">
+                <div class="result-header">
+                    <h2>تفاصيل المهمة</h2>
+                    <button id="share-btn" class="btn btn-share">مشاركة النتائج</button>
+                </div>
+                
+                <div class="product-grid">
+                    <div class="product-field">
+                        <span class="field-label">الموقع الوظيفي:</span>
+                        <span class="field-value" id="functional-loc">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">منطقة التغطية:</span>
+                        <span class="field-value" id="covering-area">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">الوصف:</span>
+                        <span class="field-value" id="description">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">وصف الفئة:</span>
+                        <span class="field-value" id="category-desc">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">تاريخ آخر تفتيش:</span>
+                        <span class="field-value" id="inspection-date">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">تاريخ آخر اختبار:</span>
+                        <span class="field-value" id="testing-date">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">منطقة التشغيل:</span>
+                        <span class="field-value" id="operating-area">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">خط الأعمال:</span>
+                        <span class="field-value" id="business-line">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">المدينة:</span>
+                        <span class="field-value" id="city">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">S/s:</span>
+                        <span class="field-value" id="ss">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">الرقم التسلسلي:</span>
+                        <span class="field-value" id="serial-number">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">نوع الكائن:</span>
+                        <span class="field-value" id="object-type">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">الموقع:</span>
+                        <span class="field-value" id="location">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">القسم المالك:</span>
+                        <span class="field-value" id="owning-dept">-</span>
+                    </div>
+                    <div class="product-field">
+                        <span class="field-label">منطقة الأعمال+التشغيل:</span>
+                        <span class="field-value" id="business-operating-area">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbw6wG6ykuxlKww8DTZo0Rp10qgCkQQQFsSJq1a03KPyEj20lS9ZVMffrqWmZeSE7-mZ/exec";
-    let isLoggedIn = false;
-
-    function showError(message) {
-        const error = document.getElementById('error-message');
-        error.textContent = message;
-        error.style.display = "block";
-    }
-
-    async function login() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-
-        if (!username || !password) {
-            showError("الرجاء إدخال اسم المستخدم وكلمة المرور");
-            return;
-        }
-
-        try {
-            const response = await fetch(API_URL + "?action=login&user=" + encodeURIComponent(username) + "&pass=" + encodeURIComponent(password));
-            const data = await response.json();
-
-            if (data.status === "success") {
-                isLoggedIn = true;
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('scanner-page').classList.remove('hidden');
+    <script>
+        // روابط API
+        const API_URL = "https://script.google.com/macros/s/AKfycbz2RYbSfm2U3p1VhEgLZbWcvBQMGkf9O8m0kL8l_7Ny1Qx_EqfbDS5EwHg4SR8vnPQ5/exec";
+        
+        // عناصر DOM
+        const loginPage = document.getElementById('loginPage');
+        const scannerPage = document.getElementById('scannerPage');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const searchBtn = document.getElementById('search-btn');
+        const barcodeInput = document.getElementById('barcode-input');
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const resultDiv = document.getElementById('result');
+        const shareBtn = document.getElementById('share-btn');
+        
+        let stream = null;
+        let scanning = false;
+        let currentUser = null;
+        
+        // تسجيل الدخول
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                showLoginError("يرجى إدخال اسم المستخدم وكلمة المرور");
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('action', 'login');
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    currentUser = {
+                        name: username,
+                        initial: username.charAt(0).toUpperCase()
+                    };
+                    
+                    // تحديث واجهة المستخدم
+                    userAvatar.textContent = currentUser.initial;
+                    userName.textContent = currentUser.name;
+                    
+                    // الانتقال إلى صفحة المسح
+                    loginPage.style.display = "none";
+                    scannerPage.style.display = "flex";
+                } else {
+                    showLoginError(data.message || "اسم المستخدم أو كلمة المرور غير صحيحة");
+                }
+            } catch (error) {
+                showLoginError("حدث خطأ في الاتصال بالخادم");
+            }
+        });
+        
+        // تسجيل الخروج
+        logoutBtn.addEventListener('click', () => {
+            // إيقاف الكاميرا إن كانت تعمل
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            // إخفاء صفحة المسح وإظهار صفحة تسجيل الدخول
+            scannerPage.style.display = "none";
+            loginPage.style.display = "flex";
+            
+            // إعادة تعيين حقول تسجيل الدخول
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            
+            // إخفاء أي رسائل خطأ
+            loginError.style.display = "none";
+        });
+        
+        // بدء المسح
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" }
+                });
+                video.srcObject = stream;
+                video.play();
+                
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                scanning = true;
+                
+                scanQRCode();
+            } catch (err) {
+                showError("تعذر الوصول إلى الكاميرا: " + err.message);
+            }
+        });
+        
+        // إيقاف المسح
+        stopBtn.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            scanning = false;
+        });
+        
+        // البحث يدوياً
+        searchBtn.addEventListener('click', () => {
+            const barcode = barcodeInput.value.trim();
+            if (barcode) {
+                fetchData(barcode);
             } else {
-                showError(data.message || "بيانات غير صحيحة");
+                showError("الرجاء إدخال باركود صحيح");
             }
-        } catch (e) {
-            showError("حدث خطأ في الاتصال");
+        });
+        
+        // مسح QR Code
+        function scanQRCode() {
+            if (!scanning) return;
+            
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+                
+                if (code) {
+                    stopBtn.click();
+                    fetchData(code.data);
+                }
+            }
+            
+            requestAnimationFrame(scanQRCode);
         }
-    }
-
-    // --- نفس كود المسح ---
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const startBtn = document.getElementById('start-btn');
-    const stopBtn = document.getElementById('stop-btn');
-    const searchBtn = document.getElementById('search-btn');
-    const barcodeInput = document.getElementById('barcode-input');
-    const loading = document.getElementById('loading');
-    const errorMsg = document.getElementById('error-message');
-    const resultDiv = document.getElementById('result');
-    let stream = null;
-    let scanning = false;
-
-    startBtn.addEventListener('click', async () => {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment" }
-            });
-            video.srcObject = stream;
-            video.play();
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            scanning = true;
-            scanQRCode();
-        } catch (err) {
-            showError("تعذر الوصول إلى الكاميرا: " + err.message);
-        }
-    });
-
-    stopBtn.addEventListener('click', () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
-        video.srcObject = null;
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        scanning = false;
-    });
-
-    searchBtn.addEventListener('click', () => {
-        const barcode = barcodeInput.value.trim();
-        if (barcode) {
-            fetchData(barcode);
-        } else {
-            showError("الرجاء إدخال باركود صحيح");
-        }
-    });
-
-    function scanQRCode() {
-        if (!scanning) return;
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
-            if (code) {
-                stopBtn.click();
-                fetchData(code.data);
+        
+        // جلب البيانات من Google Sheets
+        async function fetchData(barcode) {
+            try {
+                loading.style.display = "block";
+                errorMsg.style.display = "none";
+                resultDiv.style.display = "none";
+                
+                const formData = new FormData();
+                formData.append('action', 'scan');
+                formData.append('barcode', barcode);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                loading.style.display = "none";
+                
+                if (data.status === "error") {
+                    throw new Error(data.message);
+                }
+                
+                // تعبئة البيانات
+                document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
+                document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
+                document.getElementById('description').textContent = data["Description"] || "-";
+                document.getElementById('category-desc').textContent = data["Category Description"] || "-";
+                document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
+                document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
+                document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
+                document.getElementById('business-line').textContent = data["Business Line"] || "-";
+                document.getElementById('city').textContent = data["City"] || "-";
+                document.getElementById('ss').textContent = data["S/s"] || "-";
+                document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
+                document.getElementById('object-type').textContent = data["Object Type"] || "-";
+                document.getElementById('location').textContent = data["Location"] || "-";
+                document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
+                document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
+                
+                resultDiv.style.display = "block";
+                barcodeInput.value = "";
+                
+            } catch (error) {
+                loading.style.display = "none";
+                showError(error.message || "حدث خطأ أثناء جلب البيانات");
             }
         }
-        requestAnimationFrame(scanQRCode);
-    }
-
-    async function fetchData(barcode) {
-        if (!isLoggedIn) {
-            showError("يجب تسجيل الدخول أولاً");
-            return;
-        }
-
-        try {
-            loading.style.display = "block";
-            errorMsg.style.display = "none";
-            resultDiv.style.display = "none";
-
-            const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
-            const data = await response.json();
-
-            loading.style.display = "none";
-
-            if (data.status === "error") {
-                throw new Error(data.message);
+        
+        // مشاركة النتائج
+        shareBtn.addEventListener('click', () => {
+            const resultData = {
+                "Functional Loc.": document.getElementById('functional-loc').textContent,
+                "Covering Area": document.getElementById('covering-area').textContent,
+                "Description": document.getElementById('description').textContent,
+                "Category Description": document.getElementById('category-desc').textContent,
+                "Last Inspection Date": document.getElementById('inspection-date').textContent,
+                "Last Testing Date": document.getElementById('testing-date').textContent,
+                "Operating Area": document.getElementById('operating-area').textContent,
+                "Business Line": document.getElementById('business-line').textContent,
+                "City": document.getElementById('city').textContent,
+                "S/s": document.getElementById('ss').textContent,
+                "Serial Number": document.getElementById('serial-number').textContent,
+                "Object Type": document.getElementById('object-type').textContent,
+                "Location": document.getElementById('location').textContent,
+                "Owning Dept.": document.getElementById('owning-dept').textContent,
+                "Business+Operating Area": document.getElementById('business-operating-area').textContent
+            };
+            
+            let shareText = "تفاصيل المهمة:\n\n";
+            for (const [key, value] of Object.entries(resultData)) {
+                if (value !== "-") {
+                    shareText += `${key}: ${value}\n`;
+                }
             }
-
-            document.getElementById('functional-loc').textContent = data["Functional Loc."] || "-";
-            document.getElementById('covering-area').textContent = data["Covering Area"] || "-";
-            document.getElementById('description').textContent = data["Description"] || "-";
-            document.getElementById('category-desc').textContent = data["Category Description"] || "-";
-            document.getElementById('inspection-date').textContent = data["Last Inspection Date"] || "-";
-            document.getElementById('testing-date').textContent = data["Last Testing Date"] || "-";
-            document.getElementById('operating-area').textContent = data["Operating Area"] || "-";
-            document.getElementById('business-line').textContent = data["Business Line"] || "-";
-            document.getElementById('city').textContent = data["City"] || "-";
-            document.getElementById('ss').textContent = data["S/s"] || "-";
-            document.getElementById('serial-number').textContent = data["Serial Number"] || "-";
-            document.getElementById('object-type').textContent = data["Object Type"] || "-";
-            document.getElementById('location').textContent = data["Location"] || "-";
-            document.getElementById('owning-dept').textContent = data["Owning Dept."] || "-";
-            document.getElementById('business-operating-area').textContent = data["Business+Operating Area"] || "-";
-
-            resultDiv.style.display = "block";
-            barcodeInput.value = "";
-        } catch (error) {
-            loading.style.display = "none";
-            showError(error.message || "حدث خطأ أثناء جلب البيانات");
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'تفاصيل المهمة',
+                    text: shareText
+                }).catch(err => {
+                    copyToClipboard(shareText);
+                });
+            } else {
+                copyToClipboard(shareText);
+            }
+        });
+        
+        // نسخ النص إلى الحافظة
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            alert("تم نسخ التفاصيل إلى الحافظة:\n\n" + text);
         }
-    }
-</script>
+        
+        // عرض خطأ في صفحة تسجيل الدخول
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.style.display = "block";
+            
+            // إخفاء الخطأ بعد 5 ثواني
+            setTimeout(() => {
+                loginError.style.display = "none";
+            }, 5000);
+        }
+        
+        // عرض خطأ في صفحة المسح
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = "block";
+            
+            // إخفاء الخطأ بعد 5 ثواني
+            setTimeout(() => {
+                errorMsg.style.display = "none";
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
