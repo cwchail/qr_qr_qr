@@ -34,7 +34,6 @@
             min-height: 80vh;
         }
         
-        /* تصميم صفحة تسجيل الدخول */
         .login-container {
             padding: 40px;
             width: 50%;
@@ -140,7 +139,6 @@
             display: none;
         }
         
-        /* تصميم صفحة المعلومات */
         .info-container {
             width: 50%;
             background: linear-gradient(135deg, #4285F4, #34A853);
@@ -215,7 +213,6 @@
             font-size: 14px;
         }
         
-        /* تصميم الصفحة الرئيسية بعد تسجيل الدخول */
         .scanner-page {
             display: none;
             width: 100%;
@@ -448,7 +445,6 @@
             font-weight: bold;
         }
         
-        /* تصميم متجاوب */
         @media (max-width: 900px) {
             .container {
                 flex-direction: column;
@@ -466,7 +462,6 @@
     </style>
 </head>
 <body>
-    <!-- صفحة تسجيل الدخول -->
     <div class="container" id="loginPage">
         <div class="login-container">
             <div class="logo-section">
@@ -490,9 +485,28 @@
                 <div class="error-message" id="loginError"></div>
             </form>
         </div>
-     </div>
+        
+        <div class="info-container">
+            <h2>مميزات النظام</h2>
+            <ul class="features">
+                <li>مسح رموز QR Code بسرعة ودقة</li>
+                <li>استخراج بيانات المنتجات من قاعدة البيانات</li>
+                <li>تخزين المعلومات في سجلات موثوقة</li>
+                <li>إمكانية البحث يدويًا برقم الباركود</li>
+                <li>مشاركة النتائج مع فريق العمل</li>
+                <li>واجهة مستخدم سهلة ومبسطة</li>
+                <li>يعمل على جميع الأجهزة والأنظمة</li>
+            </ul>
+            
+            <div class="qr-section">
+                <div class="qr-placeholder">
+                    <i>QR</i>
+                </div>
+                <p>قم بمسح رمز QR Code لعرض تفاصيل المنتج</p>
+            </div>
+        </div>
+    </div>
     
-    <!-- صفحة المسح بعد تسجيل الدخول -->
     <div class="container" id="scannerPage" style="display: none;">
         <div class="scanner-page">
             <div class="header">
@@ -604,7 +618,7 @@
 
     <script>
         // روابط API
-        const API_URL = "https://script.google.com/macros/s/AKfycbz2RYbSfm2U3p1VhEgLZbWcvBQMGkf9O8m0kL8l_7Ny1Qx_EqfbDS5EwHg4SR8vnPQ5/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycb.../exec";
         
         // عناصر DOM
         const loginPage = document.getElementById('loginPage');
@@ -614,7 +628,6 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const userAvatar = document.getElementById('userAvatar');
         const userName = document.getElementById('userName');
-        
         const video = document.getElementById('video');
         const startBtn = document.getElementById('start-btn');
         const stopBtn = document.getElementById('stop-btn');
@@ -642,14 +655,19 @@
             }
             
             try {
-                const formData = new FormData();
-                formData.append('action', 'login');
-                formData.append('username', username);
-                formData.append('password', password);
+                loading.style.display = "block";
+                loginError.style.display = "none";
                 
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: "login",
+                        username: username,
+                        password: password
+                    })
                 });
                 
                 const data = await response.json();
@@ -660,11 +678,9 @@
                         initial: username.charAt(0).toUpperCase()
                     };
                     
-                    // تحديث واجهة المستخدم
                     userAvatar.textContent = currentUser.initial;
                     userName.textContent = currentUser.name;
                     
-                    // الانتقال إلى صفحة المسح
                     loginPage.style.display = "none";
                     scannerPage.style.display = "flex";
                 } else {
@@ -672,26 +688,23 @@
                 }
             } catch (error) {
                 showLoginError("حدث خطأ في الاتصال بالخادم");
+                console.error("Login error:", error);
+            } finally {
+                loading.style.display = "none";
             }
         });
         
         // تسجيل الخروج
         logoutBtn.addEventListener('click', () => {
-            // إيقاف الكاميرا إن كانت تعمل
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
             
-            // إخفاء صفحة المسح وإظهار صفحة تسجيل الدخول
             scannerPage.style.display = "none";
             loginPage.style.display = "flex";
-            
-            // إعادة تعيين حقول تسجيل الدخول
             document.getElementById('username').value = "";
             document.getElementById('password').value = "";
-            
-            // إخفاء أي رسائل خطأ
             loginError.style.display = "none";
         });
         
@@ -768,13 +781,15 @@
                 errorMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 
-                const formData = new FormData();
-                formData.append('action', 'scan');
-                formData.append('barcode', barcode);
-                
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: "scan",
+                        barcode: barcode
+                    })
                 });
                 
                 const data = await response.json();
@@ -808,6 +823,7 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                console.error("Fetch error:", error);
             }
         }
         
@@ -862,23 +878,17 @@
             alert("تم نسخ التفاصيل إلى الحافظة:\n\n" + text);
         }
         
-        // عرض خطأ في صفحة تسجيل الدخول
         function showLoginError(message) {
             loginError.textContent = message;
             loginError.style.display = "block";
-            
-            // إخفاء الخطأ بعد 5 ثواني
             setTimeout(() => {
                 loginError.style.display = "none";
             }, 5000);
         }
         
-        // عرض خطأ في صفحة المسح
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
-            
-            // إخفاء الخطأ بعد 5 ثواني
             setTimeout(() => {
                 errorMsg.style.display = "none";
             }, 5000);
