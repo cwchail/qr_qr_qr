@@ -2,7 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <style>
@@ -98,10 +97,6 @@
         }
         .controls {
             margin: 20px 0;
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
         #manual-input {
             margin: 20px 0;
@@ -242,7 +237,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyGB7XWCNX3M7Z61V4vdCXe-sFl2rL55-bZ5kue8p83Jf21uQvUod3qOCwzOzZPC7yt/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxNAVQTcDUi5thQ0zGgyYvxjRJymi9P3QCgwN297590eZ9-0hAsrcwE5vDR-lltECRp/exec";
 
     function showError(message) {
         const error = document.getElementById('error-message');
@@ -274,7 +269,6 @@
         }
     }
 
-    // --- نفس كود مسح QR Code ---
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -374,11 +368,6 @@
             loading.style.display = "none";
             showError(error.message || "حدث خطأ أثناء جلب البيانات");
         }
-    }
-
-    function showError(message) {
-        errorMsg.textContent = message;
-        errorMsg.style.display = "block";
     }
 </script>
 
