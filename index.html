@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
     <style>
@@ -33,7 +34,7 @@
             color: white;
             border: none;
             padding: 10px 20px;
-            margin: 10px 0;
+            margin-top: 10px;
             width: 100%;
             font-size: 16px;
             border-radius: 5px;
@@ -138,6 +139,14 @@
             font-size: 18px;
             color: #4285F4;
         }
+        #error-message {
+            color: #EA4335;
+            margin: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(234,67,53,0.1);
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -153,91 +162,95 @@
 
 <!-- صفحة مسح QR Code -->
 <div class="scanner-container hidden" id="scanner-page">
-    <h1>شركة جيزة العربية للأنظمة QR Code</h1>
-    <div id="scanner-container">
-        <video id="video" playsinline></video>
-        <canvas id="canvas"></canvas>
-        <div class="scanner-overlay">
-            <div class="scanner-line"></div>
+    <!-- نسخة من الكود الأصلي -->
+    <div class="container">
+        <h1>شركة جيزة العربية للأنظمة QR Code</h1>
+        <div id="scanner-container">
+            <video id="video" playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div class="scanner-overlay">
+                <div class="scanner-line"></div>
+            </div>
         </div>
-    </div>
-    <div class="controls">
-        <button id="start-btn">بدء المسح</button>
-        <button id="stop-btn" disabled>إيقاف المسح</button>
-    </div>
-    <div id="manual-input">
-        <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
-        <button id="search-btn">بحث</button>
-    </div>
-    <div id="loading">جاري جلب البيانات...</div>
-    <div id="error-message"></div>
-    <div id="result">
-        <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
-        <div class="product-field">
-            <span class="field-label">الموقع الوظيفي:</span>
-            <span class="field-value" id="functional-loc">-</span>
+        <div class="controls">
+            <button id="start-btn">بدء المسح</button>
+            <button id="stop-btn" disabled>إيقاف المسح</button>
         </div>
-        <div class="product-field">
-            <span class="field-label">منطقة التغطية:</span>
-            <span class="field-value" id="covering-area">-</span>
+        <div id="manual-input">
+            <input type="text" id="barcode-input" placeholder="أدخل الكود يدوياً">
+            <button id="search-btn">بحث</button>
         </div>
-        <div class="product-field">
-            <span class="field-label">الوصف:</span>
-            <span class="field-value" id="description">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">وصف الفئة:</span>
-            <span class="field-value" id="category-desc">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">تاريخ آخر تفتيش:</span>
-            <span class="field-value" id="inspection-date">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">تاريخ آخر اختبار:</span>
-            <span class="field-value" id="testing-date">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">منطقة التشغيل:</span>
-            <span class="field-value" id="operating-area">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">خط الأعمال:</span>
-            <span class="field-value" id="business-line">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">المدينة:</span>
-            <span class="field-value" id="city">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">S/s:</span>
-            <span class="field-value" id="ss">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">الرقم التسلسلي:</span>
-            <span class="field-value" id="serial-number">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">نوع الكائن:</span>
-            <span class="field-value" id="object-type">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">الموقع:</span>
-            <span class="field-value" id="location">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">القسم المالك:</span>
-            <span class="field-value" id="owning-dept">-</span>
-        </div>
-        <div class="product-field">
-            <span class="field-label">منطقة الأعمال+التشغيل:</span>
-            <span class="field-value" id="business-operating-area">-</span>
+        <div id="loading">جاري جلب البيانات...</div>
+        <div id="error-message"></div>
+        <div id="result">
+            <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+            <div class="product-field">
+                <span class="field-label">الموقع الوظيفي:</span>
+                <span class="field-value" id="functional-loc">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة التغطية:</span>
+                <span class="field-value" id="covering-area">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">الوصف:</span>
+                <span class="field-value" id="description">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">وصف الفئة:</span>
+                <span class="field-value" id="category-desc">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر تفتيش:</span>
+                <span class="field-value" id="inspection-date">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">تاريخ آخر اختبار:</span>
+                <span class="field-value" id="testing-date">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة التشغيل:</span>
+                <span class="field-value" id="operating-area">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">خط الأعمال:</span>
+                <span class="field-value" id="business-line">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">المدينة:</span>
+                <span class="field-value" id="city">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">S/s:</span>
+                <span class="field-value" id="ss">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">الرقم التسلسلي:</span>
+                <span class="field-value" id="serial-number">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">نوع الكائن:</span>
+                <span class="field-value" id="object-type">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">الموقع:</span>
+                <span class="field-value" id="location">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">القسم المالك:</span>
+                <span class="field-value" id="owning-dept">-</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">منطقة الأعمال+التشغيل:</span>
+                <span class="field-value" id="business-operating-area">-</span>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxNAVQTcDUi5thQ0zGgyYvxjRJymi9P3QCgwN297590eZ9-0hAsrcwE5vDR-lltECRp/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbw6wG6ykuxlKww8DTZo0Rp10qgCkQQQFsSJq1a03KPyEj20lS9ZVMffrqWmZeSE7-mZ/exec";
+    let isLoggedIn = false;
 
     function showError(message) {
         const error = document.getElementById('error-message');
@@ -259,6 +272,7 @@
             const data = await response.json();
 
             if (data.status === "success") {
+                isLoggedIn = true;
                 document.getElementById('login-page').classList.add('hidden');
                 document.getElementById('scanner-page').classList.remove('hidden');
             } else {
@@ -269,6 +283,7 @@
         }
     }
 
+    // --- نفس كود المسح ---
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -335,13 +350,21 @@
     }
 
     async function fetchData(barcode) {
+        if (!isLoggedIn) {
+            showError("يجب تسجيل الدخول أولاً");
+            return;
+        }
+
         try {
             loading.style.display = "block";
             errorMsg.style.display = "none";
             resultDiv.style.display = "none";
+
             const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
             const data = await response.json();
+
             loading.style.display = "none";
+
             if (data.status === "error") {
                 throw new Error(data.message);
             }
@@ -370,6 +393,5 @@
         }
     }
 </script>
-
 </body>
 </html>
