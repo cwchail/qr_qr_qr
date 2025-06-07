@@ -487,7 +487,17 @@
         </div>
         
         <div class="info-container">
-          
+            <h2>مميزات النظام</h2>
+            <ul class="features">
+                <li>مسح رموز QR Code بسرعة ودقة</li>
+                <li>استخراج بيانات المنتجات من قاعدة البيانات</li>
+                <li>تخزين المعلومات في سجلات موثوقة</li>
+                <li>إمكانية البحث يدويًا برقم الباركود</li>
+                <li>مشاركة النتائج مع فريق العمل</li>
+                <li>واجهة مستخدم سهلة ومبسطة</li>
+                <li>يعمل على جميع الأجهزة والأنظمة</li>
+            </ul>
+            
             <div class="qr-section">
                 <div class="qr-placeholder">
                     <i>QR</i>
@@ -608,7 +618,7 @@
 
     <script>
         // روابط API
-        const API_URL = "https://script.google.com/macros/s/AKfycbwzq4rAGCiV7pWbbCPrMKE-VRPOR4FwjlUhkWACGKg-XOKQGGQV0Fud7SOuvzKbrIm1/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzxYHhli-atFkxnnL3kQY09WFR9Yei6AcL3oC1Uofx9fZgibiq66lQXHH4krDyIATJi/exec";
         
         // عناصر DOM
         const loginPage = document.getElementById('loginPage');
@@ -651,7 +661,8 @@
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         action: "login",
@@ -660,7 +671,13 @@
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`خطأ في الشبكة: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                
+                console.log("استجابة الخادم:", data);
                 
                 if (data.status === "success") {
                     currentUser = {
@@ -677,8 +694,8 @@
                     showLoginError(data.message || "اسم المستخدم أو كلمة المرور غير صحيحة");
                 }
             } catch (error) {
-                showLoginError("حدث خطأ في الاتصال بالخادم");
-                console.error("Login error:", error);
+                console.error("حدث خطأ أثناء تسجيل الدخول:", error);
+                showLoginError("حدث خطأ عند الاتصال بالخادم: " + error.message);
             } finally {
                 loading.style.display = "none";
             }
