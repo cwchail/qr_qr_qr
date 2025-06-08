@@ -146,7 +146,7 @@
         #video {
             width: 100%;
             display: block;
-            transform: scaleX(-1); /* Flip horizontally for better UX */
+            transform: scaleX(-1);
         }
         
         #canvas {
@@ -418,6 +418,13 @@
             display: block;
         }
         
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -471,7 +478,8 @@
                 <div class="logo-inner">GA</div>
             </div>
             <h1>نظام مسح وتعديل QR Code</h1>
-                  </div>
+            <p>نظام متكامل لمسح الرموز الثنائية وإدارة بيانات المعدات</p>
+        </div>
         
         <div class="section">
             <div class="section-title">
@@ -532,7 +540,11 @@
                     </button>
                     <button id="save-btn" class="btn-secondary" style="display:none">
                         <i>💾</i>
-                        حفظ
+                        حفظ التعديلات
+                    </button>
+                    <button id="cancel-btn" class="btn-danger" style="display:none">
+                        <i>✖️</i>
+                        إلغاء
                     </button>
                 </div>
             </div>
@@ -616,12 +628,13 @@
         
         <div class="footer">
             <p>جميع الحقوق محفوظة © 2023 | شركة جيزة العربية للأنظمة</p>
-                </div>
+            <p>الإصدار 2.0 | نظام إدارة المعدات</p>
+        </div>
     </div>
 
     <script>
         // استخدم هذا الرابط عند النشر على الويب
-        const API_URL = "https://script.google.com/macros/s/AKfycbwQvEahk8hzrMcnMl7Ah5bcSV0drAmcUb4KDdlJ3USkfVPfw2PRJer58H9nK_oTPVyw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzexBNGnpInD6PXk4qLP29Kx8GrJlvmkRvU4yBXuVxVu4BnG5bZStIwRXIXnkgXJzbu/exec";
         
         // عناصر DOM
         const video = document.getElementById('video');
@@ -632,6 +645,7 @@
         const searchBtn = document.getElementById('search-btn');
         const editBtn = document.getElementById('edit-btn');
         const saveBtn = document.getElementById('save-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
@@ -641,6 +655,7 @@
         let stream = null;
         let scanning = false;
         let currentBarcode = "";
+        let originalData = {}; // لتخزين البيانات الأصلية قبل التعديل
         
         // بدء المسح
         startBtn.addEventListener('click', async () => {
@@ -691,30 +706,81 @@
         
         // تفعيل وضع التعديل
         editBtn.addEventListener('click', () => {
+            // حفظ البيانات الأصلية قبل التعديل
+            originalData = {
+                "Functional Loc.": document.getElementById('functional-loc').textContent,
+                "Covering Area": document.getElementById('covering-area').textContent,
+                "Description": document.getElementById('description').textContent,
+                "Category Description": document.getElementById('category-desc').textContent,
+                "Last Inspection Date": document.getElementById('inspection-date').textContent,
+                "Last Testing Date": document.getElementById('testing-date').textContent,
+                "Operating Area": document.getElementById('operating-area').textContent,
+                "Business Line": document.getElementById('business-line').textContent,
+                "City": document.getElementById('city').textContent,
+                "S/s": document.getElementById('ss').textContent,
+                "Serial Number": document.getElementById('serial-number').textContent,
+                "Object Type": document.getElementById('object-type').textContent,
+                "Location": document.getElementById('location').textContent,
+                "Owning Dept.": document.getElementById('owning-dept').textContent,
+                "Business+Operating Area": document.getElementById('business-operating-area').textContent
+            };
+            
             // نقل البيانات من عناصر العرض إلى حقول الإدخال
-            document.getElementById('edit-functional-loc').value = document.getElementById('functional-loc').textContent;
-            document.getElementById('edit-covering-area').value = document.getElementById('covering-area').textContent;
-            document.getElementById('edit-description').value = document.getElementById('description').textContent;
-            document.getElementById('edit-category-desc').value = document.getElementById('category-desc').textContent;
-            document.getElementById('edit-inspection-date').value = document.getElementById('inspection-date').textContent;
-            document.getElementById('edit-testing-date').value = document.getElementById('testing-date').textContent;
-            document.getElementById('edit-operating-area').value = document.getElementById('operating-area').textContent;
-            document.getElementById('edit-business-line').value = document.getElementById('business-line').textContent;
-            document.getElementById('edit-city').value = document.getElementById('city').textContent;
-            document.getElementById('edit-ss').value = document.getElementById('ss').textContent;
-            document.getElementById('edit-serial-number').value = document.getElementById('serial-number').textContent;
-            document.getElementById('edit-object-type').value = document.getElementById('object-type').textContent;
-            document.getElementById('edit-location').value = document.getElementById('location').textContent;
-            document.getElementById('edit-owning-dept').value = document.getElementById('owning-dept').textContent;
-            document.getElementById('edit-business-operating-area').value = document.getElementById('business-operating-area').textContent;
+            document.getElementById('edit-functional-loc').value = originalData["Functional Loc."];
+            document.getElementById('edit-covering-area').value = originalData["Covering Area"];
+            document.getElementById('edit-description').value = originalData["Description"];
+            document.getElementById('edit-category-desc').value = originalData["Category Description"];
+            document.getElementById('edit-inspection-date').value = originalData["Last Inspection Date"];
+            document.getElementById('edit-testing-date').value = originalData["Last Testing Date"];
+            document.getElementById('edit-operating-area').value = originalData["Operating Area"];
+            document.getElementById('edit-business-line').value = originalData["Business Line"];
+            document.getElementById('edit-city').value = originalData["City"];
+            document.getElementById('edit-ss').value = originalData["S/s"];
+            document.getElementById('edit-serial-number').value = originalData["Serial Number"];
+            document.getElementById('edit-object-type').value = originalData["Object Type"];
+            document.getElementById('edit-location').value = originalData["Location"];
+            document.getElementById('edit-owning-dept').value = originalData["Owning Dept."];
+            document.getElementById('edit-business-operating-area').value = originalData["Business+Operating Area"];
             
             // تبديل الواجهة إلى وضع التعديل
             resultDiv.classList.remove('view-mode');
             resultDiv.classList.add('edit-mode');
             
-            // إظهار زر الحفظ وإخفاء زر التعديل
+            // إظهار أزرار الحفظ والإلغاء وإخفاء زر التعديل
             editBtn.style.display = 'none';
             saveBtn.style.display = 'block';
+            cancelBtn.style.display = 'block';
+        });
+        
+        // إلغاء التعديلات
+        cancelBtn.addEventListener('click', () => {
+            // العودة إلى وضع العرض دون حفظ التغييرات
+            resultDiv.classList.remove('edit-mode');
+            resultDiv.classList.add('view-mode');
+            
+            // إعادة تعيين البيانات الأصلية
+            document.getElementById('functional-loc').textContent = originalData["Functional Loc."];
+            document.getElementById('covering-area').textContent = originalData["Covering Area"];
+            document.getElementById('description').textContent = originalData["Description"];
+            document.getElementById('category-desc').textContent = originalData["Category Description"];
+            document.getElementById('inspection-date').textContent = originalData["Last Inspection Date"];
+            document.getElementById('testing-date').textContent = originalData["Last Testing Date"];
+            document.getElementById('operating-area').textContent = originalData["Operating Area"];
+            document.getElementById('business-line').textContent = originalData["Business Line"];
+            document.getElementById('city').textContent = originalData["City"];
+            document.getElementById('ss').textContent = originalData["S/s"];
+            document.getElementById('serial-number').textContent = originalData["Serial Number"];
+            document.getElementById('object-type').textContent = originalData["Object Type"];
+            document.getElementById('location').textContent = originalData["Location"];
+            document.getElementById('owning-dept').textContent = originalData["Owning Dept."];
+            document.getElementById('business-operating-area').textContent = originalData["Business+Operating Area"];
+            
+            // إعادة الأزرار إلى وضعها الطبيعي
+            editBtn.style.display = 'block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            
+            showSuccess("تم إلغاء التعديلات");
         });
         
         // حفظ التعديلات
@@ -815,6 +881,7 @@
                 resultDiv.classList.add('view-mode');
                 editBtn.style.display = 'block';
                 saveBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
                 
                 barcodeInput.value = "";
                 
@@ -873,6 +940,7 @@
                     resultDiv.classList.add('view-mode');
                     editBtn.style.display = 'block';
                     saveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
                 } else {
                     throw new Error(result.message || "حدث خطأ أثناء تحديث البيانات");
                 }
