@@ -471,8 +471,7 @@
                 <div class="logo-inner">GA</div>
             </div>
             <h1>نظام مسح وتعديل QR Code</h1>
-            <p>نظام متكامل لمسح الرموز الثنائية وإدارة بيانات المعدات</p>
-        </div>
+                  </div>
         
         <div class="section">
             <div class="section-title">
@@ -616,12 +615,13 @@
         </div>
         
         <div class="footer">
-            <p>جميع الحقوق محفوظة © 2025 | شركة جيزة العربية للأنظمة</p>
-                  </div>
+            <p>جميع الحقوق محفوظة © 2023 | شركة جيزة العربية للأنظمة</p>
+                </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby5KDTuz2KQWIAqP5OIlZlwA7cFNnAu5WQzCknMW7ysLkfAci7M0mIgohHenOTF2zkn/exec";
+        // استخدم هذا الرابط عند النشر على الويب
+        const API_URL = "https://script.google.com/macros/s/AKfycbwQvEahk8hzrMcnMl7Ah5bcSV0drAmcUb4KDdlJ3USkfVPfw2PRJer58H9nK_oTPVyw/exec";
         
         // عناصر DOM
         const video = document.getElementById('video');
@@ -645,6 +645,12 @@
         // بدء المسح
         startBtn.addEventListener('click', async () => {
             try {
+                // إيقاف أي كاميرا نشطة حالياً
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
+                // بدء الكاميرا
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "environment" }
                 });
@@ -745,7 +751,10 @@
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                    canOverwriteImage: true
+                });
                 
                 if (code) {
                     stopBtn.click();
@@ -761,9 +770,17 @@
             try {
                 loading.style.display = "block";
                 errorMsg.style.display = "none";
+                successMsg.style.display = "none";
                 resultDiv.style.display = "none";
                 
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+                // إضافة بارامتر عشوائي لمنع التخزين المؤقت
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}&t=${cacheBuster}`);
+                
+                if (!response.ok) {
+                    throw new Error(`خطأ في الخادم: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 loading.style.display = "none";
@@ -804,6 +821,7 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
+                console.error("Error fetching data:", error);
             }
         }
         
@@ -821,6 +839,10 @@
                     },
                     body: JSON.stringify(data)
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`خطأ في الخادم: ${response.status}`);
+                }
                 
                 const result = await response.json();
                 
@@ -858,12 +880,18 @@
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء تحديث البيانات");
+                console.error("Error updating data:", error);
             }
         }
         
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
+            
+            // إخفاء الرسالة بعد 5 ثوانٍ
+            setTimeout(() => {
+                errorMsg.style.display = "none";
+            }, 5000);
         }
         
         function showSuccess(message) {
@@ -875,6 +903,18 @@
                 successMsg.style.display = "none";
             }, 5000);
         }
+        
+        // إضافة خاصية البحث عند الضغط على Enter
+        barcodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+        
+        // إظهار رسالة ترحيبية عند التحميل
+        window.addEventListener('DOMContentLoaded', () => {
+            showSuccess("مرحباً بك في نظام مسح وتعديل QR Code. جاهز للاستخدام!");
+        });
     </script>
 </body>
 </html>
