@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js "></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -106,25 +106,24 @@
             display: block;
             margin-bottom: 5px;
         }
-        .editable-field {
+        .editable-field input {
             width: 100%;
             padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 16px;
         }
-        .controls-small {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
+        #save-btn {
+            background-color: #34A8A1;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
-        .controls-small button {
-            flex: 1;
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 4px;
+        #save-btn:hover {
+            background-color: #298089;
         }
         #loading {
             display: none;
@@ -162,10 +161,11 @@
         </div>
         <div id="loading">جاري جلب البيانات...</div>
         <div id="error-message"></div>
+
+        <!-- نموذج العرض والتعديل -->
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
             
-            <!-- الحقول القابلة للتحرير -->
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <input type="text" id="functional-loc" class="editable-field">
@@ -227,16 +227,12 @@
                 <input type="text" id="business-operating-area" class="editable-field">
             </div>
 
-            <!-- أزرار الحفظ والإلغاء -->
-            <div class="controls-small">
-                <button id="save-btn" style="background: #34A853;">حفظ</button>
-                <button id="cancel-btn" style="background: #EA4335;">إلغاء</button>
-            </div>
+            <button id="save-btn">حفظ التعديلات</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbypNLGpMOGQkCQTpsruiDm0yeYDZ2SB2aNjHDriFXAGkY-YcNVrOjqZ5NiyO8NJ6MWW/exec ";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwJWHVO7zuF0UV8AvdI-OC_904kIHCBAQUhbDSGI8vs62tK24--4KWK4x2ojMvJ6N5K/exec"; 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -247,8 +243,10 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+
         let stream = null;
         let scanning = false;
+        let currentBarcode = "";
 
         // بدء المسح
         startBtn.addEventListener('click', async () => {
@@ -306,31 +304,58 @@
             requestAnimationFrame(scanQRCode);
         }
 
-        // تحديث وظيفة عرض البيانات لتكون قابلة للتحرير
-        function populateEditableFields(data) {
-            document.getElementById('functional-loc').value = data["Functional Loc."] || "";
-            document.getElementById('covering-area').value = data["Covering Area"] || "";
-            document.getElementById('description').value = data["Description"] || "";
-            document.getElementById('category-desc').value = data["Category Description"] || "";
-            document.getElementById('inspection-date').value = data["Last Inspection Date"] || "";
-            document.getElementById('testing-date').value = data["Last Testing Date"] || "";
-            document.getElementById('operating-area').value = data["Operating Area"] || "";
-            document.getElementById('business-line').value = data["Business Line"] || "";
-            document.getElementById('city').value = data["City"] || "";
-            document.getElementById('ss').value = data["S/s"] || "";
-            document.getElementById('serial-number').value = data["Serial Number"] || "";
-            document.getElementById('object-type').value = data["Object Type"] || "";
-            document.getElementById('location').value = data["Location"] || "";
-            document.getElementById('owning-dept').value = data["Owning Dept."] || "";
-            document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
+        // جلب البيانات من Google Sheets
+        async function fetchData(barcode) {
+            try {
+                loading.style.display = "block";
+                errorMsg.style.display = "none";
+                resultDiv.style.display = "none";
+                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+                const data = await response.json();
+                loading.style.display = "none";
+
+                if (data.status === "error") {
+                    throw new Error(data.message);
+                }
+
+                // تعبئة الحقول القابلة للتحرير
+                document.getElementById('functional-loc').value = data["Functional Loc."] || "";
+                document.getElementById('covering-area').value = data["Covering Area"] || "";
+                document.getElementById('description').value = data["Description"] || "";
+                document.getElementById('category-desc').value = data["Category Description"] || "";
+                document.getElementById('inspection-date').value = data["Last Inspection Date"] || "";
+                document.getElementById('testing-date').value = data["Last Testing Date"] || "";
+                document.getElementById('operating-area').value = data["Operating Area"] || "";
+                document.getElementById('business-line').value = data["Business Line"] || "";
+                document.getElementById('city').value = data["City"] || "";
+                document.getElementById('ss').value = data["S/s"] || "";
+                document.getElementById('serial-number').value = data["Serial Number"] || "";
+                document.getElementById('object-type').value = data["Object Type"] || "";
+                document.getElementById('location').value = data["Location"] || "";
+                document.getElementById('owning-dept').value = data["Owning Dept."] || "";
+                document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
+
+                resultDiv.style.display = "block";
+                barcodeInput.value = "";
+                currentBarcode = barcode;
+
+            } catch (error) {
+                loading.style.display = "none";
+                showError(error.message || "حدث خطأ أثناء جلب البيانات");
+            }
         }
 
-        // معالجة حفظ البيانات
+        // حفظ التعديلات
         document.getElementById('save-btn').addEventListener('click', () => {
-            const barcode = barcodeInput.value.trim();
-            if (!barcode) return alert("الرجاء إدخال كود الباركود");
+            const barcode = currentBarcode || barcodeInput.value.trim();
+
+            if (!barcode) {
+                showError("لا يمكن حفظ التعديل بدون باركود");
+                return;
+            }
 
             const updatedData = {
+                barcode: barcode,
                 "Functional Loc.": document.getElementById('functional-loc').value,
                 "Covering Area": document.getElementById('covering-area').value,
                 "Description": document.getElementById('description').value,
@@ -348,60 +373,25 @@
                 "Business+Operating Area": document.getElementById('business-operating-area').value
             };
 
-            fetch(`${API_URL}/update`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ barcode, data: updatedData })
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === "success") {
-                    alert("✅ تم الحفظ بنجاح!");
-                } else {
-                    alert("❌ " + result.message);
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(updatedData),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("⚠️ حدث خطأ أثناء الحفظ");
-            });
-        });
-
-        // معالجة إلغاء التعديلات
-        document.getElementById('cancel-btn').addEventListener('click', () => {
-            if (confirm("هل تريد إلغاء التعديلات؟ سيتم استعادة البيانات الأصلية")) {
-                const barcode = barcodeInput.value.trim();
-                if (barcode) {
-                    fetchData(barcode); // إعادة جلب البيانات الأصلية
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert("تم حفظ التعديلات بنجاح");
                 } else {
-                    resultDiv.style.display = "none";
-                }
-            }
-        });
-
-        // جلب البيانات من Google Sheets
-        async function fetchData(barcode) {
-            try {
-                loading.style.display = "block";
-                errorMsg.style.display = "none";
-                resultDiv.style.display = "none";
-                
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
-                const data = await response.json();
-                loading.style.display = "none";
-                
-                if (data.status === "error") {
                     throw new Error(data.message);
                 }
-                
-                populateEditableFields(data);
-                resultDiv.style.display = "block";
-                barcodeInput.value = "";
-            } catch (error) {
-                loading.style.display = "none";
-                showError(error.message || "حدث خطأ أثناء جلب البيانات");
-            }
-        }
+            })
+            .catch(err => {
+                showError("فشل في حفظ التعديلات: " + err.message);
+            });
+        });
 
         function showError(message) {
             errorMsg.textContent = message;
