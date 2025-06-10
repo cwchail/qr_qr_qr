@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
+
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -13,10 +15,12 @@
             background: #f5f5f5;
             text-align: center;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
         }
+
         #scanner-container {
             width: 100%;
             max-width: 500px;
@@ -26,13 +30,16 @@
             border-radius: 8px;
             overflow: hidden;
         }
+
         #video {
             width: 100%;
             display: block;
         }
+
         #canvas {
             display: none;
         }
+
         .scanner-overlay {
             position: absolute;
             top: 0;
@@ -43,6 +50,7 @@
             border: 30px solid rgba(0,0,0,0.4);
             pointer-events: none;
         }
+
         .scanner-line {
             position: absolute;
             top: 0;
@@ -54,13 +62,16 @@
             animation: scan 2s infinite linear;
             pointer-events: none;
         }
+
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
         }
+
         .controls {
             margin: 20px 0;
         }
+
         button {
             background: #4285F4;
             color: white;
@@ -71,13 +82,16 @@
             cursor: pointer;
             font-size: 16px;
         }
+
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+
         #manual-input {
             margin: 20px 0;
         }
+
         #barcode-input {
             padding: 10px;
             width: 200px;
@@ -85,6 +99,7 @@
             border-radius: 5px;
             font-size: 16px;
         }
+
         #result {
             background: white;
             padding: 20px;
@@ -95,34 +110,37 @@
             text-align: right;
             display: none;
         }
+
         .product-field {
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
+
         .field-label {
             font-weight: bold;
             color: #4285F4;
             display: block;
             margin-bottom: 5px;
         }
+
         input.editable {
             width: 100%;
             padding: 5px;
             margin-top: 5px;
         }
+
         input[type="date"] {
             direction: ltr;
         }
-        #edit-controls {
-            margin-top: 15px;
-        }
+
         #loading {
             display: none;
             margin: 20px;
             font-size: 18px;
             color: #4285F4;
         }
+
         #error-message {
             color: #EA4335;
             margin: 15px;
@@ -131,9 +149,33 @@
             background: rgba(234,67,53,0.1);
             display: none;
         }
+
+        @media screen and (max-width: 600px) {
+            button {
+                font-size: 14px;
+                padding: 8px 14px;
+            }
+            #barcode-input {
+                width: 100%;
+            }
+            #result {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
+
+<!-- شاشة تسجيل الدخول -->
+<div id="login-screen">
+    <h2>تسجيل الدخول</h2>
+    <input type="text" id="username" placeholder="اسم المستخدم"><br><br>
+    <input type="password" id="password" placeholder="كلمة المرور"><br><br>
+    <button onclick="login()">دخول</button>
+</div>
+
+<!-- الصفحة الرئيسية -->
+<div id="main-content" style="display: none;">
     <div class="container">
         <h1>شركة جيزة العربية للأنظمة QR Code</h1>
         <div id="scanner-container">
@@ -155,7 +197,6 @@
         <div id="error-message"></div>
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
-
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <input type="text" class="editable field-value" id="functional-loc" disabled readonly>
@@ -216,237 +257,315 @@
                 <span class="field-label">منطقة الأعمال+التشغيل:</span>
                 <input type="text" class="editable field-value" id="business-operating-area" disabled>
             </div>
-        </div>
-        <div id="edit-controls">
             <button id="edit-btn">تعديل</button>
             <button id="save-btn" disabled>حفظ</button>
             <button id="cancel-btn" disabled>إلغاء</button>
+            <button id="export-pdf-btn">تصدير إلى PDF</button>
+            <button id="share-btn">مشاركة</button>
         </div>
     </div>
+</div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw4bip2LZidvqjT7cHym9soa52izaj9SZBxmOHI0dC1PdjM4NxG82w1k8WbJGOcaWwf/exec"; 
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbw3EFjn2X8866jmo9PiqmRRMrYKJVIOQLeWPy2j6DpErJ7PDZKZQZW7f_FFnhuGh1JO/exec"; 
+    let stream = null;
+    let scanning = false;
+    let originalData = {};
+    let currentBarcode = "";
+
+    // --- تسجيل الدخول ---
+    function login() {
+        const validUser = "admin";
+        const validPass = "123456";
+
+        const user = document.getElementById("username").value;
+        const pass = document.getElementById("password").value;
+
+        if (user === validUser && pass === validPass) {
+            localStorage.setItem("loggedIn", "true");
+            document.getElementById("login-screen").style.display = "none";
+            document.getElementById("main-content").style.display = "block";
+        } else {
+            alert("اسم المستخدم أو كلمة المرور غير صحيحة");
+        }
+    }
+
+    window.onload = () => {
+        if (localStorage.getItem("loggedIn") === "true") {
+            document.getElementById("login-screen").style.display = "none";
+            document.getElementById("main-content").style.display = "block";
+        }
+    };
+
+    // --- Events ---
+    const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const searchBtn = document.getElementById('search-btn');
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const exportBtn = document.getElementById('export-pdf-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const barcodeInput = document.getElementById('barcode-input');
+    const loading = document.getElementById('loading');
+    const errorMsg = document.getElementById('error-message');
+    const resultDiv = document.getElementById('result');
+
+    startBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            video.play();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            scanning = true;
+            scanQRCode();
+        } catch (err) {
+            showError("تعذر الوصول إلى الكاميرا: " + err.message);
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        const video = document.getElementById('video');
+        video.srcObject = null;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        scanning = false;
+    });
+
+    searchBtn.addEventListener('click', () => {
+        const barcode = barcodeInput.value.trim();
+        if (barcode) fetchData(barcode);
+        else showError("الرجاء إدخال باركود صحيح");
+    });
+
+    editBtn.addEventListener('click', () => {
+        convertToDateInputs();
+        enableEditableFields(true);
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        fillOriginalData();
+        disableAllInputs();
+        editBtn.disabled = false;
+        saveBtn.disabled = true;
+        cancelBtn.disabled = true;
+    });
+
+    saveBtn.addEventListener('click', async () => {
+        const updatedData = {};
+        document.querySelectorAll('.editable').forEach(input => {
+            updatedData[input.id] = input.value;
+        });
+
+        try {
+            loading.style.display = "block";
+            const response = await fetch(API_URL + "/exec", {
+                method: 'POST',
+                body: JSON.stringify({ barcode: currentBarcode, data: updatedData })
+            });
+            const result = await response.json();
+            loading.style.display = "none";
+
+            if (result.status === "success") {
+                alert("تم تحديث البيانات بنجاح");
+                originalData = updatedData;
+            } else {
+                throw new Error(result.message || "فشل في حفظ التعديلات");
+            }
+        } catch (error) {
+            showError(error.message);
+        }
+    });
+
+    exportBtn.addEventListener('click', () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const fields = [
+            ["الموقع الوظيفي", document.getElementById("functional-loc").value],
+            ["منطقة التغطية", document.getElementById("covering-area").value],
+            ["الوصف", document.getElementById("description").value],
+            ["وصف الفئة", document.getElementById("category-desc").value],
+            ["تاريخ آخر تفتيش", document.getElementById("inspection-date").value],
+            ["تاريخ آخر اختبار", document.getElementById("testing-date").value],
+            ["منطقة التشغيل", document.getElementById("operating-area").value],
+            ["خط الأعمال", document.getElementById("business-line").value],
+            ["المدينة", document.getElementById("city").value],
+            ["S/s", document.getElementById("ss").value],
+            ["الرقم التسلسلي", document.getElementById("serial-number").value],
+            ["نوع الكائن", document.getElementById("object-type").value],
+            ["الموقع", document.getElementById("location").value],
+            ["القسم المالك", document.getElementById("owning-dept").value],
+            ["منطقة الأعمال+التشغيل", document.getElementById("business-operating-area").value]
+        ];
+
+        let y = 20;
+        doc.setFontSize(14);
+        doc.text("تفاصيل المهمة", 14, 15);
+
+        doc.setFontSize(12);
+        fields.forEach(([label, value]) => {
+            doc.text(label + ": " + (value || "-"), 14, y += 10);
+        });
+
+        doc.save("بيانات_المهمة.pdf");
+    });
+
+    shareBtn.addEventListener('click', () => {
+        if (!currentBarcode) {
+            alert("لا توجد بيانات لمشاركتها");
+            return;
+        }
+        shareData(currentBarcode);
+    });
+
+    // --- Scan QR Code ---
+    function scanQRCode() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const searchBtn = document.getElementById('search-btn');
-        const editBtn = document.getElementById('edit-btn');
-        const saveBtn = document.getElementById('save-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const barcodeInput = document.getElementById('barcode-input');
-        const loading = document.getElementById('loading');
-        const errorMsg = document.getElementById('error-message');
-        const resultDiv = document.getElementById('result');
-
-        let stream = null;
-        let scanning = false;
-        let originalData = {};
-        let currentBarcode = "";
-
-        // --- Events ---
-        startBtn.addEventListener('click', async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = stream;
-                video.play();
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-                scanning = true;
-                scanQRCode();
-            } catch (err) {
-                showError("تعذر الوصول إلى الكاميرا: " + err.message);
+        if (!scanning) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code) {
+                stopBtn.click();
+                fetchData(code.data);
             }
-        });
+        }
+        requestAnimationFrame(scanQRCode);
+    }
 
-        stopBtn.addEventListener('click', () => {
-            if (stream) stream.getTracks().forEach(track => track.stop());
-            video.srcObject = null;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            scanning = false;
-        });
+    // --- Fetch Data from Google Sheets ---
+    async function fetchData(barcode) {
+        try {
+            loading.style.display = "block";
+            errorMsg.style.display = "none";
+            resultDiv.style.display = "none";
+            const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
+            const data = await response.json();
+            loading.style.display = "none";
+            if (data.status === "error") throw new Error(data.message);
 
-        searchBtn.addEventListener('click', () => {
-            const barcode = barcodeInput.value.trim();
-            if (barcode) fetchData(barcode);
-            else showError("الرجاء إدخال باركود صحيح");
-        });
+            originalData = {
+                "functional-loc": data["Functional Loc."],
+                "covering-area": data["Covering Area"],
+                "description": data["Description"],
+                "category-desc": data["Category Description"],
+                "inspection-date": data["Last Inspection Date"] || "",
+                "testing-date": data["Last Testing Date"] || "",
+                "operating-area": data["Operating Area"],
+                "business-line": data["Business Line"],
+                "city": data["City"],
+                "ss": data["S/s"],
+                "serial-number": data["Serial Number"],
+                "object-type": data["Object Type"],
+                "location": data["Location"],
+                "owning-dept": data["Owning Dept."],
+                "business-operating-area": data["Business+Operating Area"]
+            };
+            currentBarcode = barcode;
 
-        editBtn.addEventListener('click', () => {
-            convertToDateInputs(); // تحويل الحقول المناسبة إلى نوع date
-            enableEditableFields(true);
-        });
+            document.getElementById('functional-loc').value = data["Functional Loc."] || "";
+            document.getElementById('covering-area').value = data["Covering Area"] || "";
+            document.getElementById('description').value = data["Description"] || "";
+            document.getElementById('category-desc').value = data["Category Description"] || "";
+            document.getElementById('inspection-date').value = formatDate(data["Last Inspection Date"]);
+            document.getElementById('testing-date').value = formatDate(data["Last Testing Date"]);
+            document.getElementById('operating-area').value = data["Operating Area"] || "";
+            document.getElementById('business-line').value = data["Business Line"] || "";
+            document.getElementById('city').value = data["City"] || "";
+            document.getElementById('ss').value = data["S/s"] || "";
+            document.getElementById('serial-number').value = data["Serial Number"] || "";
+            document.getElementById('object-type').value = data["Object Type"] || "";
+            document.getElementById('location').value = data["Location"] || "";
+            document.getElementById('owning-dept').value = data["Owning Dept."] || "";
+            document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
 
-        cancelBtn.addEventListener('click', () => {
-            fillOriginalData();
-            disableAllInputs();
-            editBtn.disabled = false;
-            saveBtn.disabled = true;
-            cancelBtn.disabled = true;
-        });
+            resultDiv.style.display = "block";
+            barcodeInput.value = "";
+        } catch (error) {
+            loading.style.display = "none";
+            showError(error.message || "حدث خطأ أثناء جلب البيانات");
+        }
+    }
 
-        saveBtn.addEventListener('click', async () => {
-            const updatedData = {};
-            document.querySelectorAll('.editable').forEach(input => {
-                updatedData[input.id] = input.value;
+    function convertToDateInputs() {
+        document.getElementById('inspection-date').type = 'date';
+        document.getElementById('testing-date').type = 'date';
+    }
+
+    function enableEditableFields(enable) {
+        document.querySelectorAll('.editable').forEach(input => {
+            if (input.id !== 'functional-loc') input.disabled = !enable;
+        });
+        saveBtn.disabled = false;
+        cancelBtn.disabled = false;
+        editBtn.disabled = true;
+    }
+
+    function disableAllInputs() {
+        document.querySelectorAll('.editable').forEach(input => {
+            input.disabled = true;
+        });
+    }
+
+    function fillOriginalData() {
+        document.getElementById('functional-loc').value = originalData["functional-loc"] || "";
+        document.getElementById('covering-area').value = originalData["covering-area"] || "";
+        document.getElementById('description').value = originalData["description"] || "";
+        document.getElementById('category-desc').value = originalData["category-desc"] || "";
+        document.getElementById('inspection-date').value = originalData["inspection-date"] || "";
+        document.getElementById('testing-date').value = originalData["testing-date"] || "";
+        document.getElementById('operating-area').value = originalData["operating-area"] || "";
+        document.getElementById('business-line').value = originalData["business-line"] || "";
+        document.getElementById('city').value = originalData["city"] || "";
+        document.getElementById('ss').value = originalData["ss"] || "";
+        document.getElementById('serial-number').value = originalData["serial-number"] || "";
+        document.getElementById('object-type').value = originalData["object-type"] || "";
+        document.getElementById('location').value = originalData["location"] || "";
+        document.getElementById('owning-dept').value = originalData["owning-dept"] || "";
+        document.getElementById('business-operating-area').value = originalData["business-operating-area"] || "";
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
+    }
+
+    function shareData(barcode) {
+        const url = `${window.location.origin}${window.location.pathname}?barcode=${encodeURIComponent(barcode)}`;
+        const text = `
+التفاصيل المشتركة:
+الموقع الوظيفي: ${document.getElementById('functional-loc').value}
+منطقة التغطية: ${document.getElementById('covering-area').value}
+الوصف: ${document.getElementById('description').value}
+تاريخ آخر تفتيش: ${document.getElementById('inspection-date').value}
+تاريخ آخر اختبار: ${document.getElementById('testing-date').value}
+`.trim();
+
+        if (navigator.share) {
+            navigator.share({ title: 'تفاصيل المهمة', text, url }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(url).then(() => {
+                alert("تم نسخ الرابط:\n" + url);
+            }, () => {
+                prompt("يرجى نسخ الرابط:", url);
             });
-
-            try {
-                loading.style.display = "block";
-                const response = await fetch(API_URL + "/exec", {
-                    method: 'POST',
-                    body: JSON.stringify({ barcode: currentBarcode, data: updatedData })
-                });
-                const result = await response.json();
-                loading.style.display = "none";
-
-                if (result.status === "success") {
-                    alert("تم تحديث البيانات بنجاح");
-                    originalData = updatedData;
-                } else {
-                    throw new Error(result.message || "فشل في حفظ التعديلات");
-                }
-            } catch (error) {
-                showError(error.message);
-            }
-        });
-
-        function convertToDateInputs() {
-            const inspectionDateInput = document.getElementById('inspection-date');
-            const testingDateInput = document.getElementById('testing-date');
-
-            if (inspectionDateInput.type !== 'date') {
-                inspectionDateInput.type = 'date';
-                testingDateInput.type = 'date';
-            }
         }
+    }
 
-        function enableEditableFields(enable) {
-            document.querySelectorAll('.editable').forEach(input => {
-                if (input.id !== 'functional-loc') input.disabled = !enable;
-            });
-            saveBtn.disabled = false;
-            cancelBtn.disabled = false;
-            editBtn.disabled = true;
-        }
-
-        function disableAllInputs() {
-            document.querySelectorAll('.editable').forEach(input => {
-                input.disabled = true;
-            });
-        }
-
-        function fillOriginalData() {
-            document.getElementById('functional-loc').value = originalData["functional-loc"] || "";
-            document.getElementById('covering-area').value = originalData["covering-area"] || "";
-            document.getElementById('description').value = originalData["description"] || "";
-            document.getElementById('category-desc').value = originalData["category-desc"] || "";
-            document.getElementById('inspection-date').value = originalData["inspection-date"] || "";
-            document.getElementById('testing-date').value = originalData["testing-date"] || "";
-            document.getElementById('operating-area').value = originalData["operating-area"] || "";
-            document.getElementById('business-line').value = originalData["business-line"] || "";
-            document.getElementById('city').value = originalData["city"] || "";
-            document.getElementById('ss').value = originalData["ss"] || "";
-            document.getElementById('serial-number').value = originalData["serial-number"] || "";
-            document.getElementById('object-type').value = originalData["object-type"] || "";
-            document.getElementById('location').value = originalData["location"] || "";
-            document.getElementById('owning-dept').value = originalData["owning-dept"] || "";
-            document.getElementById('business-operating-area').value = originalData["business-operating-area"] || "";
-        }
-
-        // --- Scan QR Code ---
-        function scanQRCode() {
-            if (!scanning) return;
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
-                if (code) {
-                    stopBtn.click();
-                    fetchData(code.data);
-                }
-            }
-            requestAnimationFrame(scanQRCode);
-        }
-
-        // --- Fetch Data from Google Sheets ---
-        async function fetchData(barcode) {
-            try {
-                loading.style.display = "block";
-                errorMsg.style.display = "none";
-                resultDiv.style.display = "none";
-                const response = await fetch(`${API_URL}?barcode=${encodeURIComponent(barcode)}`);
-                const data = await response.json();
-                loading.style.display = "none";
-                if (data.status === "error") throw new Error(data.message);
-
-                originalData = {
-                    "functional-loc": data["Functional Loc."],
-                    "covering-area": data["Covering Area"],
-                    "description": data["Description"],
-                    "category-desc": data["Category Description"],
-                    "inspection-date": data["Last Inspection Date"] || "",
-                    "testing-date": data["Last Testing Date"] || "",
-                    "operating-area": data["Operating Area"],
-                    "business-line": data["Business Line"],
-                    "city": data["City"],
-                    "ss": data["S/s"],
-                    "serial-number": data["Serial Number"],
-                    "object-type": data["Object Type"],
-                    "location": data["Location"],
-                    "owning-dept": data["Owning Dept."],
-                    "business-operating-area": data["Business+Operating Area"]
-                };
-                currentBarcode = barcode;
-
-                // Fill fields with data
-                document.getElementById('functional-loc').value = data["Functional Loc."] || "";
-                document.getElementById('covering-area').value = data["Covering Area"] || "";
-                document.getElementById('description').value = data["Description"] || "";
-                document.getElementById('category-desc').value = data["Category Description"] || "";
-                document.getElementById('inspection-date').value = formatDate(data["Last Inspection Date"]);
-                document.getElementById('testing-date').value = formatDate(data["Last Testing Date"]);
-                document.getElementById('operating-area').value = data["Operating Area"] || "";
-                document.getElementById('business-line').value = data["Business Line"] || "";
-                document.getElementById('city').value = data["City"] || "";
-                document.getElementById('ss').value = data["S/s"] || "";
-                document.getElementById('serial-number').value = data["Serial Number"] || "";
-                document.getElementById('object-type').value = data["Object Type"] || "";
-                document.getElementById('location').value = data["Location"] || "";
-                document.getElementById('owning-dept').value = data["Owning Dept."] || "";
-                document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
-
-                resultDiv.style.display = "block";
-                document.getElementById('edit-controls').style.display = "block";
-                barcodeInput.value = "";
-                enableEditButtons(true);
-            } catch (error) {
-                loading.style.display = "none";
-                showError(error.message || "حدث خطأ أثناء جلب البيانات");
-                enableEditButtons(false);
-            }
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return "";
-            const d = new Date(dateStr);
-            return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
-        }
-
-        function enableEditButtons(enable) {
-            editBtn.disabled = !enable;
-            saveBtn.disabled = true;
-            cancelBtn.disabled = true;
-        }
-
-        function showError(message) {
-            errorMsg.textContent = message;
-            errorMsg.style.display = "block";
-        }
-    </script>
+    function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.style.display = "block";
+    }
+</script>
 </body>
 </html>
