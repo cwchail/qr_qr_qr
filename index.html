@@ -106,17 +106,13 @@
             display: block;
             margin-bottom: 5px;
         }
-        .field-value {
-            font-size: 16px;
-        }
-        #edit-controls {
-            margin-top: 15px;
-            display: none;
-        }
         input.editable {
             width: 100%;
             padding: 5px;
             margin-top: 5px;
+        }
+        #edit-controls {
+            margin-top: 15px;
         }
         #loading {
             display: none;
@@ -159,7 +155,7 @@
 
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
-                <input type="text" class="editable field-value" id="functional-loc" disabled>
+                <input type="text" class="editable field-value" id="functional-loc" disabled readonly>
             </div>
             <div class="product-field">
                 <span class="field-label">منطقة التغطية:</span>
@@ -226,7 +222,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwzILRnJemcAksm369WCDwnTHNW-GM90wfbr2UthFFCdrqPDj7jS6aigrqdt0eX0ANb/exec";  // استبدل برابط Web App الخاص بك
+        const API_URL = "https://script.google.com/macros/s/AKfycbwlqnfmSVYVMa5tuLBqg33UqANevtOT4xVcjXPH6lhs90V4EbulZ1niMMISw-0ErCsk/exec"; 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -240,12 +236,13 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+
         let stream = null;
         let scanning = false;
         let originalData = {};
         let currentBarcode = "";
 
-        // --- أحداث الأزرار ---
+        // --- Events ---
         startBtn.addEventListener('click', async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -275,7 +272,9 @@
         });
 
         editBtn.addEventListener('click', () => {
-            document.querySelectorAll('.editable').forEach(input => input.disabled = false);
+            document.querySelectorAll('.editable').forEach(input => {
+                if (input.id !== 'functional-loc') input.disabled = false;
+            });
             saveBtn.disabled = false;
             cancelBtn.disabled = false;
             editBtn.disabled = true;
@@ -283,10 +282,10 @@
 
         cancelBtn.addEventListener('click', () => {
             fillOriginalData();
-            document.querySelectorAll('.editable').forEach(input => input.disabled = true);
+            disableAllInputs();
+            editBtn.disabled = false;
             saveBtn.disabled = true;
             cancelBtn.disabled = true;
-            editBtn.disabled = false;
         });
 
         saveBtn.addEventListener('click', async () => {
@@ -315,7 +314,7 @@
             }
         });
 
-        // --- مسح QR Code ---
+        // --- Scan QR Code ---
         function scanQRCode() {
             if (!scanning) return;
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -332,7 +331,7 @@
             requestAnimationFrame(scanQRCode);
         }
 
-        // --- جلب البيانات ---
+        // --- Fetch Data from Google Sheets ---
         async function fetchData(barcode) {
             try {
                 loading.style.display = "block";
@@ -343,7 +342,7 @@
                 loading.style.display = "none";
                 if (data.status === "error") throw new Error(data.message);
 
-                // حفظ البيانات الأصلية
+                // Save original data for comparison
                 originalData = {
                     "functional-loc": data["Functional Loc."],
                     "covering-area": data["Covering Area"],
@@ -363,7 +362,7 @@
                 };
                 currentBarcode = barcode;
 
-                // عرض البيانات
+                // Fill fields with data
                 document.getElementById('functional-loc').value = data["Functional Loc."] || "";
                 document.getElementById('covering-area').value = data["Covering Area"] || "";
                 document.getElementById('description').value = data["Description"] || "";
@@ -407,6 +406,12 @@
             document.getElementById('location').value = originalData["location"] || "";
             document.getElementById('owning-dept').value = originalData["owning-dept"] || "";
             document.getElementById('business-operating-area').value = originalData["business-operating-area"] || "";
+        }
+
+        function disableAllInputs() {
+            document.querySelectorAll('.editable').forEach(input => {
+                input.disabled = true;
+            });
         }
 
         function enableEditButtons(enable) {
