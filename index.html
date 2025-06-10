@@ -111,6 +111,9 @@
             padding: 5px;
             margin-top: 5px;
         }
+        input[type="date"] {
+            direction: ltr;
+        }
         #edit-controls {
             margin-top: 15px;
         }
@@ -222,7 +225,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwlqnfmSVYVMa5tuLBqg33UqANevtOT4xVcjXPH6lhs90V4EbulZ1niMMISw-0ErCsk/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbw4bip2LZidvqjT7cHym9soa52izaj9SZBxmOHI0dC1PdjM4NxG82w1k8WbJGOcaWwf/exec"; 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -272,12 +275,8 @@
         });
 
         editBtn.addEventListener('click', () => {
-            document.querySelectorAll('.editable').forEach(input => {
-                if (input.id !== 'functional-loc') input.disabled = false;
-            });
-            saveBtn.disabled = false;
-            cancelBtn.disabled = false;
-            editBtn.disabled = true;
+            convertToDateInputs(); // تحويل الحقول المناسبة إلى نوع date
+            enableEditableFields(true);
         });
 
         cancelBtn.addEventListener('click', () => {
@@ -314,6 +313,49 @@
             }
         });
 
+        function convertToDateInputs() {
+            const inspectionDateInput = document.getElementById('inspection-date');
+            const testingDateInput = document.getElementById('testing-date');
+
+            if (inspectionDateInput.type !== 'date') {
+                inspectionDateInput.type = 'date';
+                testingDateInput.type = 'date';
+            }
+        }
+
+        function enableEditableFields(enable) {
+            document.querySelectorAll('.editable').forEach(input => {
+                if (input.id !== 'functional-loc') input.disabled = !enable;
+            });
+            saveBtn.disabled = false;
+            cancelBtn.disabled = false;
+            editBtn.disabled = true;
+        }
+
+        function disableAllInputs() {
+            document.querySelectorAll('.editable').forEach(input => {
+                input.disabled = true;
+            });
+        }
+
+        function fillOriginalData() {
+            document.getElementById('functional-loc').value = originalData["functional-loc"] || "";
+            document.getElementById('covering-area').value = originalData["covering-area"] || "";
+            document.getElementById('description').value = originalData["description"] || "";
+            document.getElementById('category-desc').value = originalData["category-desc"] || "";
+            document.getElementById('inspection-date').value = originalData["inspection-date"] || "";
+            document.getElementById('testing-date').value = originalData["testing-date"] || "";
+            document.getElementById('operating-area').value = originalData["operating-area"] || "";
+            document.getElementById('business-line').value = originalData["business-line"] || "";
+            document.getElementById('city').value = originalData["city"] || "";
+            document.getElementById('ss').value = originalData["ss"] || "";
+            document.getElementById('serial-number').value = originalData["serial-number"] || "";
+            document.getElementById('object-type').value = originalData["object-type"] || "";
+            document.getElementById('location').value = originalData["location"] || "";
+            document.getElementById('owning-dept').value = originalData["owning-dept"] || "";
+            document.getElementById('business-operating-area').value = originalData["business-operating-area"] || "";
+        }
+
         // --- Scan QR Code ---
         function scanQRCode() {
             if (!scanning) return;
@@ -342,14 +384,13 @@
                 loading.style.display = "none";
                 if (data.status === "error") throw new Error(data.message);
 
-                // Save original data for comparison
                 originalData = {
                     "functional-loc": data["Functional Loc."],
                     "covering-area": data["Covering Area"],
                     "description": data["Description"],
                     "category-desc": data["Category Description"],
-                    "inspection-date": data["Last Inspection Date"],
-                    "testing-date": data["Last Testing Date"],
+                    "inspection-date": data["Last Inspection Date"] || "",
+                    "testing-date": data["Last Testing Date"] || "",
                     "operating-area": data["Operating Area"],
                     "business-line": data["Business Line"],
                     "city": data["City"],
@@ -367,8 +408,8 @@
                 document.getElementById('covering-area').value = data["Covering Area"] || "";
                 document.getElementById('description').value = data["Description"] || "";
                 document.getElementById('category-desc').value = data["Category Description"] || "";
-                document.getElementById('inspection-date').value = data["Last Inspection Date"] || "";
-                document.getElementById('testing-date').value = data["Last Testing Date"] || "";
+                document.getElementById('inspection-date').value = formatDate(data["Last Inspection Date"]);
+                document.getElementById('testing-date').value = formatDate(data["Last Testing Date"]);
                 document.getElementById('operating-area').value = data["Operating Area"] || "";
                 document.getElementById('business-line').value = data["Business Line"] || "";
                 document.getElementById('city').value = data["City"] || "";
@@ -390,28 +431,10 @@
             }
         }
 
-        function fillOriginalData() {
-            document.getElementById('functional-loc').value = originalData["functional-loc"] || "";
-            document.getElementById('covering-area').value = originalData["covering-area"] || "";
-            document.getElementById('description').value = originalData["description"] || "";
-            document.getElementById('category-desc').value = originalData["category-desc"] || "";
-            document.getElementById('inspection-date').value = originalData["inspection-date"] || "";
-            document.getElementById('testing-date').value = originalData["testing-date"] || "";
-            document.getElementById('operating-area').value = originalData["operating-area"] || "";
-            document.getElementById('business-line').value = originalData["business-line"] || "";
-            document.getElementById('city').value = originalData["city"] || "";
-            document.getElementById('ss').value = originalData["ss"] || "";
-            document.getElementById('serial-number').value = originalData["serial-number"] || "";
-            document.getElementById('object-type').value = originalData["object-type"] || "";
-            document.getElementById('location').value = originalData["location"] || "";
-            document.getElementById('owning-dept').value = originalData["owning-dept"] || "";
-            document.getElementById('business-operating-area').value = originalData["business-operating-area"] || "";
-        }
-
-        function disableAllInputs() {
-            document.querySelectorAll('.editable').forEach(input => {
-                input.disabled = true;
-            });
+        function formatDate(dateStr) {
+            if (!dateStr) return "";
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
         }
 
         function enableEditButtons(enable) {
