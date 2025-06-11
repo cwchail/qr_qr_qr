@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
+    
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> 
+
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -155,7 +161,6 @@
         <div id="error-message"></div>
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
-
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <input type="text" class="editable field-value" id="functional-loc" disabled readonly>
@@ -221,11 +226,12 @@
             <button id="edit-btn">تعديل</button>
             <button id="save-btn" disabled>حفظ</button>
             <button id="cancel-btn" disabled>إلغاء</button>
+            <button id="share-pdf">مشاركة PDF</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxUyrqeRmaU5i8s6bG4Tf-2W7nx8r44nzWdQUvfuyHFTUBdMxlbhjzjVHLy6MupVYwI/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxUyrqeRmaU5i8s6bG4Tf-2W7nx8r44nzWdQUvfuyHFTUBdMxlbhjzjVHLy6MupVYwI/exec";  
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -239,7 +245,6 @@
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
-
         let stream = null;
         let scanning = false;
         let originalData = {};
@@ -275,7 +280,7 @@
         });
 
         editBtn.addEventListener('click', () => {
-            convertToDateInputs(); // تحويل الحقول المناسبة إلى نوع date
+            convertToDateInputs();
             enableEditableFields(true);
         });
 
@@ -292,7 +297,6 @@
             document.querySelectorAll('.editable').forEach(input => {
                 updatedData[input.id] = input.value;
             });
-
             try {
                 loading.style.display = "block";
                 const response = await fetch(API_URL + "/exec", {
@@ -301,7 +305,6 @@
                 });
                 const result = await response.json();
                 loading.style.display = "none";
-
                 if (result.status === "success") {
                     alert("تم تحديث البيانات بنجاح");
                     originalData = updatedData;
@@ -316,7 +319,6 @@
         function convertToDateInputs() {
             const inspectionDateInput = document.getElementById('inspection-date');
             const testingDateInput = document.getElementById('testing-date');
-
             if (inspectionDateInput.type !== 'date') {
                 inspectionDateInput.type = 'date';
                 testingDateInput.type = 'date';
@@ -383,7 +385,6 @@
                 const data = await response.json();
                 loading.style.display = "none";
                 if (data.status === "error") throw new Error(data.message);
-
                 originalData = {
                     "functional-loc": data["Functional Loc."],
                     "covering-area": data["Covering Area"],
@@ -402,7 +403,6 @@
                     "business-operating-area": data["Business+Operating Area"]
                 };
                 currentBarcode = barcode;
-
                 // Fill fields with data
                 document.getElementById('functional-loc').value = data["Functional Loc."] || "";
                 document.getElementById('covering-area').value = data["Covering Area"] || "";
@@ -419,7 +419,6 @@
                 document.getElementById('location').value = data["Location"] || "";
                 document.getElementById('owning-dept').value = data["Owning Dept."] || "";
                 document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
-
                 resultDiv.style.display = "block";
                 document.getElementById('edit-controls').style.display = "block";
                 barcodeInput.value = "";
@@ -447,6 +446,46 @@
             errorMsg.textContent = message;
             errorMsg.style.display = "block";
         }
+
+        // --- Export to PDF ---
+        document.getElementById("share-pdf").addEventListener("click", () => {
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById("result");
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('ar-SA');
+            const timeStr = now.toLocaleTimeString('ar-SA');
+
+            const functionalLoc = document.getElementById("functional-loc").value || "غير محدد";
+
+            const headerHTML = `
+                <div style="text-align:right; padding-bottom:10px; border-bottom:1px solid #ccc;">
+                    <h3>تفاصيل المهمة</h3>
+                    <p>تاريخ التصدير: ${dateStr} - ${timeStr}</p>
+                    <p><strong>الموقع الوظيفي:</strong> ${functionalLoc}</p>
+                </div>
+            `;
+
+            const tempContainer = document.createElement("div");
+            tempContainer.innerHTML = headerHTML + element.innerHTML;
+            tempContainer.style.fontFamily = "Tajawal, Arial, sans-serif";
+            tempContainer.style.backgroundColor = "white";
+            document.body.appendChild(tempContainer);
+
+            html2canvas(tempContainer).then(canvas => {
+                const imgData = canvas.toDataURL("image/png");
+                const pdf = new jsPDF("p", "mm", "a4");
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = 210;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`نتائج_المسح_${currentBarcode}_${now.toISOString().slice(0,10)}.pdf`);
+
+                document.body.removeChild(tempContainer);
+            });
+        });
+
     </script>
 </body>
 </html>
