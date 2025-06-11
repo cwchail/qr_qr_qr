@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة جيزة العربية للأنظمة 0581217473</title>
+    <title>نظام مسح QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
-    
-    <!-- jsPDF -->
+
+    <!-- jsPDF و html2canvas لتحويل الصفحة إلى PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
-    <!-- html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> 
 
     <style>
@@ -280,7 +279,7 @@
         });
 
         editBtn.addEventListener('click', () => {
-            convertToDateInputs();
+            convertToDateInputs(); // تحويل الحقول المناسبة إلى نوع date
             enableEditableFields(true);
         });
 
@@ -447,17 +446,20 @@
             errorMsg.style.display = "block";
         }
 
-        // --- Export to PDF ---
+        // --- مشاركة PDF ---
         document.getElementById("share-pdf").addEventListener("click", () => {
             const { jsPDF } = window.jspdf;
             const element = document.getElementById("result");
 
+            // الحصول على التاريخ والساعة
             const now = new Date();
             const dateStr = now.toLocaleDateString('ar-SA');
             const timeStr = now.toLocaleTimeString('ar-SA');
 
+            // الحصول على Functional Loc.
             const functionalLoc = document.getElementById("functional-loc").value || "غير محدد";
 
+            // إنشاء الرأس مع الموقع الوظيفي
             const headerHTML = `
                 <div style="text-align:right; padding-bottom:10px; border-bottom:1px solid #ccc;">
                     <h3>تفاصيل المهمة</h3>
@@ -466,10 +468,17 @@
                 </div>
             `;
 
+            // إنشاء عنصر مؤقت لدمج العناوين مع البيانات
             const tempContainer = document.createElement("div");
             tempContainer.innerHTML = headerHTML + element.innerHTML;
             tempContainer.style.fontFamily = "Tajawal, Arial, sans-serif";
             tempContainer.style.backgroundColor = "white";
+            tempContainer.style.padding = "20px";
+            tempContainer.style.width = "90%";
+            tempContainer.style.maxWidth = "800px";
+            tempContainer.style.margin = "auto";
+            tempContainer.style.direction = "rtl";
+            tempContainer.style.fontSize = "16px";
             document.body.appendChild(tempContainer);
 
             html2canvas(tempContainer).then(canvas => {
@@ -480,8 +489,24 @@
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`نتائج_المسح_${currentBarcode}_${now.toISOString().slice(0,10)}.pdf`);
 
+                // تحويل PDF إلى Blob
+                const blob = pdf.output('blob');
+                const url = URL.createObjectURL(blob);
+
+                // استخدام Web Share API إذا كان متوفرًا
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'نتائج المسح',
+                        text: `نتائج المسح للموقع الوظيفي: ${functionalLoc}`,
+                        files: [new File([blob], "نتائج_المسح.pdf", { type: "application/pdf" })],
+                    }).catch(console.error);
+                } else {
+                    // البديل: فتح PDF في تبويب جديد
+                    window.open(url, '_blank');
+                }
+
+                // حذف العنصر المؤقت
                 document.body.removeChild(tempContainer);
             });
         });
