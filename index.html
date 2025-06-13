@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
 
     <!-- jsPDF -->
@@ -313,7 +313,6 @@
             editBtn.disabled = false;
             saveBtn.disabled = true;
             cancelBtn.disabled = true;
-            enableShareButton(false);
         });
 
         saveBtn.addEventListener('click', async () => {
@@ -332,7 +331,6 @@
                 if (result.status === "success") {
                     alert("تم تحديث البيانات بنجاح");
                     originalData = updatedData;
-                    enableShareButton(true);
                 } else {
                     throw new Error(result.message || "فشل في حفظ التعديلات");
                 }
@@ -449,7 +447,7 @@
                 document.getElementById('share-controls').style.display = "block";
                 barcodeInput.value = "";
                 enableEditButtons(true);
-                enableShareButton(true);
+                enableShareButton(true); // تم تفعيل زر المشاركة هنا
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
