@@ -2,23 +2,15 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام مسح QR Code</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
-
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
-    <!-- html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> 
-    <!-- خط عربي -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500&display=swap" rel="stylesheet">
-
+    <title>نظام مسح QR Code</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>  
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background: #f5f5f5; 
+            background: #f5f5f5;
             text-align: center;
         }
         .container {
@@ -125,23 +117,6 @@
         #edit-controls {
             margin-top: 15px;
         }
-        #share-controls {
-            margin-top: 20px;
-        }
-        #share-btn {
-            background: #34A853;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 0 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #share-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
         #loading {
             display: none;
             margin: 20px;
@@ -245,14 +220,11 @@
             <button id="edit-btn">تعديل</button>
             <button id="save-btn" disabled>حفظ</button>
             <button id="cancel-btn" disabled>إلغاء</button>
-        </div>
-        <div id="share-controls">
-            <button id="share-btn" disabled>مشاركة PDF</button>
+            <button id="export-pdf-btn">تصدير إلى PDF</button>
         </div>
     </div>
-
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxUyrqeRmaU5i8s6bG4Tf-2W7nx8r44nzWdQUvfuyHFTUBdMxlbhjzjVHLy6MupVYwI/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxz4yaVyY4ANP1eeXYimCQptiSg6CNJsq61uRWDbFYfMX1r8bPnyeGTXaRFGuoOkcgz/exec";  // استبدل برابط نشرك
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -262,18 +234,16 @@
         const editBtn = document.getElementById('edit-btn');
         const saveBtn = document.getElementById('save-btn');
         const cancelBtn = document.getElementById('cancel-btn');
-        const shareBtn = document.getElementById('share-btn');
+        const exportPdfBtn = document.getElementById('export-pdf-btn');
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
-
         let stream = null;
         let scanning = false;
         let originalData = {};
         let currentBarcode = "";
 
-        // --- Events ---
         startBtn.addEventListener('click', async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -303,7 +273,7 @@
         });
 
         editBtn.addEventListener('click', () => {
-            convertToDateInputs(); // تحويل الحقول المناسبة إلى نوع date
+            convertToDateInputs();
             enableEditableFields(true);
         });
 
@@ -335,6 +305,29 @@
                     throw new Error(result.message || "فشل في حفظ التعديلات");
                 }
             } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        exportPdfBtn.addEventListener('click', async () => {
+            if (!currentBarcode) {
+                showError("لا يوجد بيانات لتصديرها.");
+                return;
+            }
+
+            try {
+                loading.style.display = "block";
+                const response = await fetch(`${API_URL}/exec?barcode=${encodeURIComponent(currentBarcode)}`);
+                const result = await response.json();
+                loading.style.display = "none";
+
+                if (result.status === "success") {
+                    window.open(result.downloadUrl, '_blank');
+                } else {
+                    throw new Error(result.message || "فشل في إنشاء ملف PDF");
+                }
+            } catch (error) {
+                loading.style.display = "none";
                 showError(error.message);
             }
         });
@@ -381,7 +374,6 @@
             document.getElementById('business-operating-area').value = originalData["business-operating-area"] || "";
         }
 
-        // --- Scan QR Code ---
         function scanQRCode() {
             if (!scanning) return;
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -398,7 +390,6 @@
             requestAnimationFrame(scanQRCode);
         }
 
-        // --- Fetch Data from Google Sheets ---
         async function fetchData(barcode) {
             try {
                 loading.style.display = "block";
@@ -426,7 +417,6 @@
                     "business-operating-area": data["Business+Operating Area"]
                 };
                 currentBarcode = barcode;
-                // Fill fields with data
                 document.getElementById('functional-loc').value = data["Functional Loc."] || "";
                 document.getElementById('covering-area').value = data["Covering Area"] || "";
                 document.getElementById('description').value = data["Description"] || "";
@@ -444,15 +434,12 @@
                 document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
                 resultDiv.style.display = "block";
                 document.getElementById('edit-controls').style.display = "block";
-                document.getElementById('share-controls').style.display = "block";
                 barcodeInput.value = "";
                 enableEditButtons(true);
-                enableShareButton(true); // تم تفعيل زر المشاركة هنا
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
                 enableEditButtons(false);
-                enableShareButton(false);
             }
         }
 
@@ -467,61 +454,6 @@
             saveBtn.disabled = true;
             cancelBtn.disabled = true;
         }
-
-        function enableShareButton(enable) {
-            shareBtn.disabled = !enable;
-        }
-
-        // --- Generate PDF ---
-        async function generatePDF() {
-            const { jspdf } = window.jspdf;
-            const doc = new jspdf.jsPDF("p", "mm", "a4");
-
-            const font = 'Tajawal';
-            doc.addFont('https://cdn.jsdelivr.net/npm/@jsfontloader/tajawal@latest/Tajawal-Regular.ttf',  font, 'normal');
-            doc.setFont(font);
-
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-
-            const now = new Date();
-            const dateTimeStr = now.toLocaleString('ar-SA-u-nu-latn');
-
-            doc.setFontSize(12);
-            doc.text(document.getElementById('functional-loc').value || "غير متوفر", 10, 20);
-            doc.text(dateTimeStr, 10, 30);
-
-            const tableData = [];
-            document.querySelectorAll('.product-field').forEach(field => {
-                const label = field.querySelector('.field-label').textContent.trim();
-                const value = field.querySelector('.editable').value.trim();
-                if (label && value) tableData.push([label, value]);
-            });
-
-            await doc.autoTable({
-                head: [['الحقل', 'القيمة']],
-                body: tableData,
-                startY: 40,
-                theme: 'grid',
-                styles: { font: font, fontSize: 12 },
-                columnStyles: {
-                    0: { cellWidth: 50 },
-                    1: { cellWidth: 100 }
-                },
-                didDrawPage: function (data) {
-                    doc.setFontSize(10);
-                    doc.text("شركة جيزة العربية للأنظمة", pageWidth / 2, pageHeight - 10, { align: 'center' });
-                }
-            });
-
-            doc.save(`بيانات_المهمة_${currentBarcode}.pdf`);
-        }
-
-        shareBtn.addEventListener('click', () => {
-            if (!shareBtn.disabled) {
-                generatePDF();
-            }
-        });
 
         function showError(message) {
             errorMsg.textContent = message;
