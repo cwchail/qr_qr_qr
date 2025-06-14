@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مسح QR Code</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script> 
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
@@ -131,6 +132,45 @@
             background: rgba(234,67,53,0.1);
             display: none;
         }
+        #export-pdf {
+            background: #34A853;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        #pdf-preview {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -155,6 +195,7 @@
         <div id="error-message"></div>
         <div id="result">
             <h2 style="color: #4285F4; margin-top: 0;">تفاصيل المهمة</h2>
+
             <div class="product-field">
                 <span class="field-label">الموقع الوظيفي:</span>
                 <input type="text" class="editable field-value" id="functional-loc" disabled readonly>
@@ -220,11 +261,22 @@
             <button id="edit-btn">تعديل</button>
             <button id="save-btn" disabled>حفظ</button>
             <button id="cancel-btn" disabled>إلغاء</button>
-            <button id="export-pdf-btn">تصدير إلى PDF</button>
+            <button id="export-pdf" disabled>تصدير PDF</button>
         </div>
     </div>
+
+    <!-- Modal for PDF Preview -->
+    <div id="pdf-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>معاينة ملف PDF</h3>
+            <iframe id="pdf-preview"></iframe>
+            <button id="download-pdf">تحميل الملف</button>
+        </div>
+    </div>
+
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxz4yaVyY4ANP1eeXYimCQptiSg6CNJsq61uRWDbFYfMX1r8bPnyeGTXaRFGuoOkcgz/exec";  // استبدل برابط نشرك
+        const API_URL = "https://script.google.com/macros/s/AKfycbz_rwbbG0A8nQYWyQuiztSWJBFMUtqsshPtZ7_-oJUjBPcAyuIBlNEebvGMO726RCA4/exec"; 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -234,16 +286,23 @@
         const editBtn = document.getElementById('edit-btn');
         const saveBtn = document.getElementById('save-btn');
         const cancelBtn = document.getElementById('cancel-btn');
-        const exportPdfBtn = document.getElementById('export-pdf-btn');
+        const exportPdfBtn = document.getElementById('export-pdf');
+        const downloadPdfBtn = document.getElementById('download-pdf');
         const barcodeInput = document.getElementById('barcode-input');
         const loading = document.getElementById('loading');
         const errorMsg = document.getElementById('error-message');
         const resultDiv = document.getElementById('result');
+        const pdfModal = document.getElementById('pdf-modal');
+        const pdfPreview = document.getElementById('pdf-preview');
+        const closeModal = document.getElementsByClassName('close')[0];
+
         let stream = null;
         let scanning = false;
         let originalData = {};
         let currentBarcode = "";
+        let currentPdfUrl = "";
 
+        // --- Events ---
         startBtn.addEventListener('click', async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -290,17 +349,27 @@
             document.querySelectorAll('.editable').forEach(input => {
                 updatedData[input.id] = input.value;
             });
+
             try {
                 loading.style.display = "block";
-                const response = await fetch(API_URL + "/exec", {
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ barcode: currentBarcode, data: updatedData })
+                    body: JSON.stringify({ 
+                        barcode: currentBarcode, 
+                        data: updatedData,
+                        action: "update"
+                    })
                 });
                 const result = await response.json();
                 loading.style.display = "none";
+
                 if (result.status === "success") {
                     alert("تم تحديث البيانات بنجاح");
                     originalData = updatedData;
+                    disableAllInputs();
+                    editBtn.disabled = false;
+                    saveBtn.disabled = true;
+                    cancelBtn.disabled = true;
                 } else {
                     throw new Error(result.message || "فشل في حفظ التعديلات");
                 }
@@ -310,31 +379,56 @@
         });
 
         exportPdfBtn.addEventListener('click', async () => {
-            if (!currentBarcode) {
-                showError("لا يوجد بيانات لتصديرها.");
-                return;
-            }
-
             try {
                 loading.style.display = "block";
-                const response = await fetch(`${API_URL}/exec?barcode=${encodeURIComponent(currentBarcode)}`);
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        barcode: currentBarcode, 
+                        data: originalData,
+                        action: "export_pdf"
+                    })
+                });
                 const result = await response.json();
                 loading.style.display = "none";
 
                 if (result.status === "success") {
-                    window.open(result.downloadUrl, '_blank');
+                    currentPdfUrl = result.pdf_url;
+                    pdfPreview.src = currentPdfUrl;
+                    pdfModal.style.display = "block";
                 } else {
                     throw new Error(result.message || "فشل في إنشاء ملف PDF");
                 }
             } catch (error) {
-                loading.style.display = "none";
                 showError(error.message);
+            }
+        });
+
+        downloadPdfBtn.addEventListener('click', () => {
+            if (currentPdfUrl) {
+                const a = document.createElement('a');
+                a.href = currentPdfUrl;
+                a.download = `تقرير_${currentBarcode}_${new Date().toISOString().slice(0,10)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        });
+
+        closeModal.addEventListener('click', () => {
+            pdfModal.style.display = "none";
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === pdfModal) {
+                pdfModal.style.display = "none";
             }
         });
 
         function convertToDateInputs() {
             const inspectionDateInput = document.getElementById('inspection-date');
             const testingDateInput = document.getElementById('testing-date');
+
             if (inspectionDateInput.type !== 'date') {
                 inspectionDateInput.type = 'date';
                 testingDateInput.type = 'date';
@@ -345,9 +439,9 @@
             document.querySelectorAll('.editable').forEach(input => {
                 if (input.id !== 'functional-loc') input.disabled = !enable;
             });
-            saveBtn.disabled = false;
-            cancelBtn.disabled = false;
-            editBtn.disabled = true;
+            saveBtn.disabled = !enable;
+            cancelBtn.disabled = !enable;
+            editBtn.disabled = enable;
         }
 
         function disableAllInputs() {
@@ -399,6 +493,7 @@
                 const data = await response.json();
                 loading.style.display = "none";
                 if (data.status === "error") throw new Error(data.message);
+
                 originalData = {
                     "functional-loc": data["Functional Loc."],
                     "covering-area": data["Covering Area"],
@@ -417,6 +512,7 @@
                     "business-operating-area": data["Business+Operating Area"]
                 };
                 currentBarcode = barcode;
+
                 document.getElementById('functional-loc').value = data["Functional Loc."] || "";
                 document.getElementById('covering-area').value = data["Covering Area"] || "";
                 document.getElementById('description').value = data["Description"] || "";
@@ -432,14 +528,17 @@
                 document.getElementById('location').value = data["Location"] || "";
                 document.getElementById('owning-dept').value = data["Owning Dept."] || "";
                 document.getElementById('business-operating-area').value = data["Business+Operating Area"] || "";
+
                 resultDiv.style.display = "block";
                 document.getElementById('edit-controls').style.display = "block";
                 barcodeInput.value = "";
                 enableEditButtons(true);
+                exportPdfBtn.disabled = false;
             } catch (error) {
                 loading.style.display = "none";
                 showError(error.message || "حدث خطأ أثناء جلب البيانات");
                 enableEditButtons(false);
+                exportPdfBtn.disabled = true;
             }
         }
 
